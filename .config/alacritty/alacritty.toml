@@ -1,0 +1,43 @@
+[general]
+import = ["catppuccin-mocha.toml"]
+
+[env]
+TERM = "xterm-256color"
+
+[window]
+padding = { x = 12, y = 12 }
+decorations = "None"
+opacity = 1.0
+blur = false
+
+[font]
+size = 10.0
+
+[font.normal]
+family = "MesloLGS Nerd Font"
+style = "Regular"
+
+[font.bold]
+family = "MesloLGS Nerd Font"
+style = "Bold"
+
+[font.italic]
+family = "MesloLGS Nerd Font"
+style = "Italic"
+
+[cursor]
+style = { shape = "Beam", blinking = "Off" }
+
+# Fix copy in nvim
+[keyboard]
+bindings = [
+  { key = "C", mods = "Control|Shift", action = "Copy" },
+  { key = "V", mods = "Control|Shift", action = "Paste" },
+  { key = "C", mods = "Control", chars = "\x03" },
+]
+
+[selection]
+save_to_clipboard = true
+
+[terminal]
+shell = "/bin/zsh"
