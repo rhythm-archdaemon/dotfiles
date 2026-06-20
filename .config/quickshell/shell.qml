@@ -65,6 +65,37 @@ ShellRoot {
 		} 
 	}
 
+	// CHANGE 1: playerctl --follow keeps a persistent process that emits
+	// immediately on any track/status change — no polling lag at all.
+	// The fallback poller still fires at 1000ms to handle edge cases
+	// (e.g. player starts after the follow process launches).
+	Process {
+		id: mediaFollower
+		command: ["bash", "-c",
+			"playerctl --follow metadata --format '{{status}}|{{artist}} - {{title}}' 2>/dev/null" +
+			" || echo 'Stopped|No Media'"
+		]
+		running: true
+		stdout: SplitParser {
+			onRead: data => {
+				var trimmed = data.trim()
+				if (!trimmed) return
+				// --follow emits lines like "Playing|Artist - Title"
+				var parts = trimmed.split("|")
+				if (parts.length >= 2) {
+					mediaState.status = parts[0]
+					var rawTrack = parts[1].replace(/^ - /, "")
+					mediaState.trackInfo = rawTrack
+				} else if (trimmed === "Stopped" || trimmed === "Paused") {
+					mediaState.status = trimmed
+					mediaState.trackInfo = "No Media"
+				}
+			}
+		}
+	}
+
+	// Fallback poller at 1000ms (was 3000ms) — catches cases where
+	// playerctl --follow missed an event or player launched after follow started
 	Process { 
 		id: mediaPoller 
 		command: ["bash", "-c", "status=$(playerctl status 2>/dev/null || echo 'Stopped'); title=$(playerctl metadata title 2>/dev/null || echo 'No Media'); artist=$(playerctl metadata artist 2>/dev/null || echo ''); if [ \"$status\" = \"Stopped\" ]; then echo \"Stopped|No Media\"; else echo \"$status|$artist - $title\"; fi"] 
@@ -75,7 +106,7 @@ ShellRoot {
 	}
 
 	Timer { 
-		interval: 3000 
+		interval: 500
 		running: true 
 		repeat: true 
 		onTriggered: mediaPoller.running = true
@@ -112,29 +143,12 @@ ShellRoot {
 		command: ["bash", "-c", "echo idle"]
 	}
 
-	Process { 
-		id: cavaPoller 
-		command: ["bash", "-c", "if command -v cava >/dev/null 2>&1; then cava -p /dev/stdin <<'CAVACONF'\n[general]\nbars = 8\n[output]\nmethod = raw\nraw_target = /dev/stdout\nbit_format = 8bit\nCONFAVA\nelse echo '0 0 0 0 0 0 0 0'; fi" ] 
-		running: false 
-		stdout: SplitParser { 
-			onRead: data => { 
-				var parts = data.trim().split(/\s+/) 
-				var blocks = ["▁","▂","▃","▄","▅","▆","▇","█"] 
-				var bar = "" 
-				for (var i = 0; i < Math.min(8, parts.length); i++) { 
-					var v = parseInt(parts[i]) 
-					if (isNaN(v)) v = 0 
-					bar += blocks[Math.min(7, Math.floor(v / 32))] 
-				} 
-				if (bar.length > 0) mediaState.visualizer = bar 
-			} 
-		} 
-	}
-
+	// CHANGE 2: vizFallbackTimer always running (not gated on expand)
+	// so the cava pill in the bar is always animated
 	Timer { 
 		id: vizFallbackTimer 
 		interval: 200 
-		running: false 
+		running: true
 		repeat: true 
 		property int tick: 0 
 		onTriggered: { 
@@ -240,6 +254,12 @@ ShellRoot {
 		} 
 	}
 
+	// CHANGE 3: battery charge cap via pkexec so it can actually write
+	// to the sysfs path which requires root.
+	// Prerequisite: install a polkit rule (see comment below) OR
+	// add to /etc/sudoers.d/battery:
+	//   username ALL=(ALL) NOPASSWD: /usr/bin/tee /sys/class/power_supply/BAT1/charge_control_end_threshold
+	// Then change pkexec below to: sudo tee ...
 	Process { 
 		id: batteryCmd 
 		command: ["bash", "-c", "echo idle"]
@@ -272,10 +292,10 @@ ShellRoot {
 		margins.left: 15
 		margins.right: 15
 		color: "transparent"
-		exclusiveZone: 30 + 5 // Fixed space reserved for the bar + top margin
+		exclusiveZone: 30 + 5
 
-		// Dynamic tracking allows expanding dropdown trays to render cleanly below without getting cut off
-		implicitHeight: Math.max(40, Math.max(mediaPill.height + 4, rightPill.height + 4))
+		// Dynamic height — only rightPill expands now; mediaPill is always 32
+		implicitHeight: Math.max(40, rightPill.height + 4)
 
 		// ── Solid Full Panel Base Bar ────────────────────────────────
 		Rectangle {
@@ -284,12 +304,12 @@ ShellRoot {
 			anchors.left: parent.left
 			anchors.right: parent.right
 			height: 40
-			color: "#1e1e2e" // Catppuccin Mocha Base
+			color: "#1e1e2e"
 			radius: 14
-			border.color: "#313244" // Subtle Surface Border
-			border.width: 1
+			border.color: "#313244"
+      border.width: 1
 
-			// ── LEFT SIDE: Power + Workspaces + Media ────────────────
+			// ── LEFT SIDE: Power + Workspaces + Media + Cava ─────────
 			Rectangle {
 				id: powerPill
 				anchors.left: parent.left
@@ -401,115 +421,91 @@ ShellRoot {
 				}
 			}
 
+			// Music player pill — flat inline controls, no expand
+			// Layout: [play/pause icon] [track name] [prev] [next]
 			Rectangle {
 				id: mediaPill
 				anchors.left: workspacePill.right
 				anchors.leftMargin: 8
-				anchors.top: parent.top
-				anchors.topMargin: 4 // Anchored to top with margin so it expands cleanly downwards
-				property bool mediaExpanded: false
-				width: 250
-				height: mediaExpanded ? 108 : 32
+				anchors.verticalCenter: parent.verticalCenter
+				height: 32
+				// Width hugs content: icon + separator + track text + two nav icons + padding
+				width: mediaPillRow.implicitWidth + 24
 				color: "#181825"
 				radius: 10
 				border.color: "#a6e3a1"
 				border.width: 1
-				clip: true
-
-				Behavior on height { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
-				Behavior on width { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
-
-				onMediaExpandedChanged: {
-					if (mediaExpanded) {
-						vizFallbackTimer.running = true
-						volumePoller.running = true
-					} else {
-						vizFallbackTimer.running = false
-					}
-				}
-
-				MouseArea {
-					anchors.fill: parent
-					hoverEnabled: true
-					acceptedButtons: Qt.NoButton
-					onExited: mediaPill.mediaExpanded = false
-				}
 
 				Row {
-					id: mediaHeaderRow
-					x: 12
-					y: 0
-					height: 32
+					id: mediaPillRow
+					anchors.centerIn: parent
 					spacing: 8
-					
+
+					// Play / Pause icon — clicking toggles playback
 					Text {
+						id: playPauseIcon
 						anchors.verticalCenter: parent.verticalCenter
-						text: mediaState.status === "Playing" ? "󰎈" : "󰏤"
+						text: mediaState.status === "Playing" ? "󰏤" : "󰐊"
 						color: mediaState.status === "Playing" ? "#a6e3a1" : "#585b70"
-						font.pixelSize: 13
+						font.pixelSize: 15
 						font.family: "MesloLGS Nerd Font"
+
+						MouseArea {
+							anchors.fill: parent
+							cursorShape: Qt.PointingHandCursor
+							hoverEnabled: true
+							onEntered: parent.color = "#a6e3a1"
+							onExited: parent.color = mediaState.status === "Playing" ? "#a6e3a1" : "#585b70"
+							onClicked: {
+								mediaCmd.command = ["bash", "-c",
+									"playerctl play-pause;" +
+									"status=$(playerctl status 2>/dev/null || echo 'Stopped');" +
+									"title=$(playerctl metadata title 2>/dev/null || echo 'No Media');" +
+									"artist=$(playerctl metadata artist 2>/dev/null || echo '');" +
+									"echo \"$status|$artist - $title\""]
+								mediaCmd.running = true
+							}
+						}
 					}
-					
+
+					// Separator
 					Text {
 						anchors.verticalCenter: parent.verticalCenter
 						text: "|"
 						color: "#a6e3a1"
-						font.pixelSize: 11
-						opacity: 0.3
+						font.pixelSize: 12
+						opacity: 1
 					}
-					
+
+					// Track name — truncated to 22 chars
 					Text {
 						id: trackText
 						anchors.verticalCenter: parent.verticalCenter
-						text: mediaPill.mediaExpanded ? mediaState.trackInfo : (mediaState.trackInfo.length > 22 ? mediaState.trackInfo.substring(0, 22) + "…" : mediaState.trackInfo)
+						text: mediaState.trackInfo.length > 22
+							? mediaState.trackInfo.substring(0, 22) + "…"
+							: mediaState.trackInfo
 						color: "#cdd6f4"
 						font.pixelSize: 11
 						font.bold: true
 					}
-					
-					MouseArea {
-						anchors.fill: parent
-						cursorShape: Qt.PointingHandCursor
-						onClicked: mediaPill.mediaExpanded = !mediaPill.mediaExpanded
-					}
-				}
 
-				Rectangle {
-					anchors.top: parent.top
-					anchors.topMargin: 32
-					width: parent.width
-					height: 1
-					color: "#a6e3a1"
-					opacity: 0.2
-					visible: mediaPill.mediaExpanded
-				}
-
-				Text {
-					anchors.top: parent.top
-					anchors.topMargin: 36
-					anchors.horizontalCenter: parent.horizontalCenter
-					text: mediaState.visualizer
-					color: "#a6e3a1"
-					font.pixelSize: 10
-					font.family: "MesloLGS Nerd Font"
-					opacity: mediaState.status === "Playing" ? 0.85 : 0.25
-					visible: mediaPill.mediaExpanded
-				}
-
-				Row {
-					anchors.top: parent.top
-					anchors.topMargin: 52
-					anchors.horizontalCenter: parent.horizontalCenter
-					spacing: 28
-					visible: mediaPill.mediaExpanded
-					opacity: mediaPill.mediaExpanded ? 1 : 0
-					Behavior on opacity { NumberAnimation { duration: 150 } }
-
+					// Separator
 					Text {
+						anchors.verticalCenter: parent.verticalCenter
+						text: "|"
+						color: "#a6e3a1"
+						font.pixelSize: 12
+						opacity: 1
+					}
+
+					// Previous
+					Text {
+						anchors.verticalCenter: parent.verticalCenter
 						text: "󰒮"
 						color: "#585b70"
-						font.pixelSize: 16
+						font.pixelSize: 15
 						font.family: "MesloLGS Nerd Font"
+
 						MouseArea {
 							anchors.fill: parent
 							cursorShape: Qt.PointingHandCursor
@@ -517,42 +513,32 @@ ShellRoot {
 							onEntered: parent.color = "#a6e3a1"
 							onExited: parent.color = "#585b70"
 							onClicked: {
-								mediaCmd.command = ["bash", "-c", "playerctl previous;" + "status=$(playerctl status 2>/dev/null || echo 'Stopped');" + "title=$(playerctl metadata title 2>/dev/null || echo 'No Media');" + "artist=$(playerctl metadata artist 2>/dev/null || echo '');" + "echo \"$status|$artist - $title\""]
+								mediaCmd.command = ["bash", "-c",
+									"playerctl previous;" +
+									"status=$(playerctl status 2>/dev/null || echo 'Stopped');" +
+									"title=$(playerctl metadata title 2>/dev/null || echo 'No Media');" +
+									"artist=$(playerctl metadata artist 2>/dev/null || echo '');" +
+									"echo \"$status|$artist - $title\""]
 								mediaCmd.running = true
 							}
 						}
-					}
-
-					Rectangle {
-						width: 26; height: 26; radius: 13
-						color: "#313244"
-						border.color: "#a6e3a1"
-						border.width: 1
+          }
+          //Separator 
+          Text {
 						anchors.verticalCenter: parent.verticalCenter
-						
-						Text {
-							anchors.centerIn: parent
-							text: mediaState.status === "Playing" ? "󰏤" : "󰐊"
-							color: "#a6e3a1"
-							font.pixelSize: 12
-							font.family: "MesloLGS Nerd Font"
-						}
-						
-						MouseArea {
-							anchors.fill: parent
-							cursorShape: Qt.PointingHandCursor
-							onClicked: {
-								mediaCmd.command = ["bash", "-c", "playerctl play-pause;" + "status=$(playerctl status 2>/dev/null || echo 'Stopped');" + "title=$(playerctl metadata title 2>/dev/null || echo 'No Media');" + "artist=$(playerctl metadata artist 2>/dev/null || echo '');" + "echo \"$status|$artist - $title\""]
-								mediaCmd.running = true
-							}
-						}
+						text: " - "
+						color: "#a6e3a1"
+						font.pixelSize: 12
+						opacity: 1
 					}
-
+					// Next
 					Text {
+						anchors.verticalCenter: parent.verticalCenter
 						text: "󰒭"
 						color: "#585b70"
-						font.pixelSize: 16
+						font.pixelSize: 15
 						font.family: "MesloLGS Nerd Font"
+
 						MouseArea {
 							anchors.fill: parent
 							cursorShape: Qt.PointingHandCursor
@@ -560,69 +546,44 @@ ShellRoot {
 							onEntered: parent.color = "#a6e3a1"
 							onExited: parent.color = "#585b70"
 							onClicked: {
-								mediaCmd.command = ["bash", "-c", "playerctl next;" + "status=$(playerctl status 2>/dev/null || echo 'Stopped');" + "title=$(playerctl metadata title 2>/dev/null || echo 'No Media');" + "artist=$(playerctl metadata artist 2>/dev/null || echo '');" + "echo \"$status|$artist - $title\""]
+								mediaCmd.command = ["bash", "-c",
+									"playerctl next;" +
+									"status=$(playerctl status 2>/dev/null || echo 'Stopped');" +
+									"title=$(playerctl metadata title 2>/dev/null || echo 'No Media');" +
+									"artist=$(playerctl metadata artist 2>/dev/null || echo '');" +
+									"echo \"$status|$artist - $title\""]
 								mediaCmd.running = true
 							}
 						}
 					}
 				}
+			}
 
-				Row {
-					anchors.top: parent.top
-					anchors.topMargin: 84
-					anchors.horizontalCenter: parent.horizontalCenter
-					spacing: 6
-					visible: mediaPill.mediaExpanded
-					
-					Text {
-						anchors.verticalCenter: parent.verticalCenter
-						text: mediaState.volume === 0 ? "󰝟" : mediaState.volume < 50 ? "󰕾" : "󰕿"
-						color: "#a6adc8"
-						font.pixelSize: 11
-						font.family: "MesloLGS Nerd Font"
-					}
-					
-					Rectangle {
-						id: volTrack
-						anchors.verticalCenter: parent.verticalCenter
-						width: 100; height: 4; radius: 2
-						color: "#313244"
-						
-						Rectangle {
-							width: volTrack.width * (mediaState.volume / 100)
-							height: parent.height; radius: 2
-							color: "#a6e3a1"
-						}
-						
-						Rectangle {
-							x: volTrack.width * (mediaState.volume / 100) - 5
-							anchors.verticalCenter: parent.verticalCenter
-							width: 10; height: 10; radius: 5
-							color: "#cdd6f4"
-							border.color: "#a6e3a1"
-							border.width: 1
-						}
-						
-						MouseArea {
-							anchors.fill: parent
-							function setVol(mx) {
-								var v = Math.max(0, Math.min(100, Math.round((mx / volTrack.width) * 100)))
-								mediaState.volume = v
-								volumeCmd.command = ["bash", "-c", "wpctl set-volume @DEFAULT_AUDIO_SINK@ " + v + "% 2>/dev/null || amixer set Master " + v + "%"]
-								volumeCmd.running = true
-							}
-							onClicked: function(mouse) { setVol(mouse.x) }
-							onPositionChanged: function(mouse) { if (pressed) setVol(mouse.x) }
-						}
-					}
-					
-					Text {
-						anchors.verticalCenter: parent.verticalCenter
-						text: mediaState.volume + "%"
-						color: "#585b70"
-						font.pixelSize: 9
-						font.bold: true
-					}
+			// CHANGE 2: Standalone cava visualizer pill — no expand, purely decorative
+			// Always shows the animated bar, anchored right of mediaPill
+			Rectangle {
+				id: cavaPill
+				anchors.left: mediaPill.right
+				anchors.leftMargin: 8
+				anchors.verticalCenter: parent.verticalCenter
+				width: 80
+				height: 32
+				color: "#181825"
+				radius: 10
+				border.color: "#a6e3a1"
+				border.width: 1
+				opacity: mediaState.status === "Playing" ? 1.0 : 0.35
+
+				Behavior on opacity { NumberAnimation { duration: 100 } }
+
+				Text {
+					anchors.centerIn: parent
+					text: mediaState.visualizer
+					color: "#a6e3a1"
+          font.pixelSize: 10
+					font.family: "MesloLGS Nerd Font"
+					// subtle vertical nudge so block chars sit centered optically
+					anchors.verticalCenterOffset: 1
 				}
 			}
 
@@ -670,7 +631,7 @@ ShellRoot {
 						text: "|"
 						color: "#cba6f7"
 						font.pixelSize: 12
-						opacity: 0.4
+						opacity: 1
 					}
 					
 					Text {
@@ -678,11 +639,11 @@ ShellRoot {
 						anchors.verticalCenter: parent.verticalCenter
 						text: Qt.formatDate(new Date(), "ddd, MMM d")
 						color: "#a6adc8"
-						font.pixelSize: 11
+						font.pixelSize: 12
 						font.bold: false
 						Timer {
 							interval: 60000; running: true; repeat: true
-							onTriggered: parent.text = Qt.formatDate(new Date(), "ddd, MMM d")
+							onTriggered: parent.text = Qt.formatDate(new Date(), "ddd, MMM - d")
 						}
 					}
 				}
@@ -693,9 +654,9 @@ ShellRoot {
 				anchors.right: clockPill.left
 				anchors.rightMargin: 8
 				anchors.top: parent.top
-				anchors.topMargin: 4 // Anchored to top with margin so it expands cleanly downwards
+				anchors.topMargin: 4
 				property string activeSection: "none"
-				width: 260
+				width: 200
 				height: {
 					if (activeSection === "wifi") {
 						var base = 38 + 8
@@ -884,7 +845,13 @@ ShellRoot {
 							onClicked: {
 								batteryState.limitActive = !batteryState.limitActive
 								var val = batteryState.limitActive ? 80 : 100
-								batteryCmd.command = ["bash", "-c", "echo " + val + " | tee /sys/class/power_supply/BAT1/charge_control_end_threshold"]
+								// Uses pkexec to write as root — requires polkit or sudoers rule
+								// Sudoers rule (recommended, add via visudo):
+								//   YOUR_USER ALL=(ALL) NOPASSWD: /usr/bin/tee /sys/class/power_supply/BAT1/charge_control_end_threshold
+								// Then replace the command below with:
+								//   "echo " + val + " | sudo tee /sys/class/power_supply/BAT1/charge_control_end_threshold"
+								batteryCmd.command = ["bash", "-c",
+									"echo " + val + " | pkexec tee /sys/class/power_supply/BAT1/charge_control_end_threshold"]
 								batteryCmd.running = true
 							}
 						}

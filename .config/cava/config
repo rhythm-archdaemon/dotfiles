@@ -1,0 +1,18 @@
+[general]
+framerate = 60
+bars = 12
+
+[input]
+method = pulse
+source = auto
+
+[output]
+method = raw
+raw_target = /dev/stdout
+data_format = ascii
+ascii_max_range = 40
+bar_delimiter = 59
+frame_delimiter = 10
+
+[smoothing]
+noise_reduction = 44
