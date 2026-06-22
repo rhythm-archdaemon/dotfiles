@@ -10,11 +10,13 @@ PanelWindow {
     screen: modelData
 
     anchors { top: true; left: true; right: true }
+    margins { top: 8; left: 8; right: 8 }
     implicitHeight: Theme.barHeight
     color: "transparent"
 
     Rectangle {
         anchors.fill: parent
+        radius: Theme.radiusMd
         color: Theme.bgPanel
         border.width: 1
         border.color: Theme.borderDim
