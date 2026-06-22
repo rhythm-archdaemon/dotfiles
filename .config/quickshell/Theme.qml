@@ -24,8 +24,8 @@ QtObject {
     readonly property color textDim:     "#5f7390"
 
     property string fontFamily: "JetBrainsMono Nerd Font"
-    property int fontSize: 13
-    property int barHeight: 44
-    property int radiusSm: 6
-    property int radiusMd: 10
+    property int fontSize: 12
+    property int barHeight: 40
+    property int radiusSm: 10
+    property int radiusMd: 0
 }

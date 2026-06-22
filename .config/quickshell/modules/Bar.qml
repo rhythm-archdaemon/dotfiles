@@ -10,7 +10,7 @@ PanelWindow {
     screen: modelData
 
     anchors { top: true; left: true; right: true }
-    margins { top: 8; left: 8; right: 8 }
+    margins { top: 0; left: 0; right: 0 }
     implicitHeight: Theme.barHeight
     color: "transparent"
 

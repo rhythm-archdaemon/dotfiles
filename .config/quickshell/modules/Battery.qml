@@ -12,7 +12,7 @@ RowLayout {
 
     readonly property var dev: UPower.displayDevice
     readonly property bool present: !!root.dev && root.dev.isLaptopBattery
-    readonly property int percent: root.dev ? Math.round(root.dev.percentage) : 0
+    readonly property int percent: Math.round(root.dev.percentage * 100)
     readonly property bool charging: !!root.dev &&
         (root.dev.state === UPowerDeviceState.Charging || root.dev.state === UPowerDeviceState.PendingCharge)
     readonly property bool full: !!root.dev && root.dev.state === UPowerDeviceState.FullyCharged
