@@ -91,16 +91,16 @@ Item {
             x: index * (width + root.gap)
             y: (root.implicitHeight - height) / 2
 
-            // Background sheen for the active workspace panel
-            color: active ? Qt.rgba(0, 1, 0.95, 0.08) : "transparent"
-            radius: Theme.radiusSm
+            // change this for Background clor for active workspace
+            color: active ? Theme.bgPanel : "transparent"
+            //radius: Theme.radiusSm 
 
             // Text Number Element
             Text {
                 id: numText
                 anchors.centerIn: parent
                 // Offset upward slightly to account for the underline space below
-                anchors.verticalCenterOffset: active ? -2 : 0 
+                anchors.verticalCenterOffset: active ? -1 : 0 
 
                 text: (dot.index + 1)
                 font.family: Theme.fontFamily
