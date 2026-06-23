@@ -126,7 +126,7 @@ RowLayout {
 
     Text {
         text: "|"
-        color: root.player && root.player.canGoNext ? Theme.neonCyan : Theme.textDim
+        color: root.player && root.player.canGoNext ? Theme.neonMagenta : Theme.textDim
         font.family: Theme.fontFamily
         font.pixelSize: Theme.fontSize
     }

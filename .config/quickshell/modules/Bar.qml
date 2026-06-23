@@ -32,16 +32,16 @@ PanelWindow {
 
             Text {
               text: "|"
-              color: Theme.neonCyan
+              color: Theme.neonMagenta
               font.family: Theme.fontFamily
               font.pixelSize: 16
             }
 
             MediaPlayer {}
-
+            
             Text {
               text: "|"
-              color: Theme.neonCyan
+              color: Theme.neonMagenta
               font.family: Theme.fontFamily
               font.pixelSize: 16
             }
