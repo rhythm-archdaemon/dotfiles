@@ -27,6 +27,7 @@ PanelWindow {
             spacing: 8
 
             Workspaces {}
+            
         }
 
         // center cluster — now playing + cava visualizer

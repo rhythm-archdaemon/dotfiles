@@ -22,8 +22,10 @@ QtObject {
 
     // typography
     readonly property color textPrimary: "#c0caf5" // Soft, readable white-blue
-    readonly property color textDim:     "#565f89" // Muted gray-blue for secondary text    property string fontFamily: "JetBrainsMono Nerd Font"
-    
+    readonly property color textDim:     "#565f89" // Muted gray-blue for secondary text    
+
+
+    property string fontFamily: "Quantico"
     property int fontSize: 13
     property int barHeight: 30
     property int radiusSm: 10

@@ -104,13 +104,13 @@ Item {
 
                 text: (dot.index + 1)
                 font.family: Theme.fontFamily
-                font.pixelSize: Theme.fontSize
+                font.pixelSize: 15
                 font.bold: active
 
                 // Color states based on workspace conditions
                 color: active ? Theme.neonCyan
                     : occupied ? Theme.textPrimary
-                    : Qt.rgba(1, 1, 1, 0.35) // Dim placeholder text if unoccupied
+                    : Theme.textDim // Dim placeholder text if unoccupied
             }
 
             // --- Active Workspace Accent Underline ---
