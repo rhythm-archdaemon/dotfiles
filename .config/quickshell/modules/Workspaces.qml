@@ -10,12 +10,13 @@ import qs
 // updates as they happen — no polling. See niri's IPC docs.
 Item {
     id: root
-    readonly property int wsCount: 5
-    readonly property int gap: 10
-    readonly property int maxDot: 16
+    readonly property int wsCount: 9
+    readonly property int gap: 2
+    readonly property int maxDot: 10
 
     // workspace id -> { idx, active, occupied }
     property var wsById: ({})
+
     function wsAtIdx(i) {
         for (const id in root.wsById) {
             const w = root.wsById[id]
@@ -34,12 +35,17 @@ Item {
         stdout: SplitParser {
             onRead: line => {
                 let evt
-                try { evt = JSON.parse(line) } catch (e) { return }
+                try {
+                    evt = JSON.parse(line)
+                } catch (e) {
+                    return
+                }
 
                 if (evt.WorkspacesChanged) {
                     const map = {}
-                    for (const w of evt.WorkspacesChanged.workspaces)
+                    for (const w of evt.WorkspacesChanged.workspaces) {
                         map[w.id] = { idx: w.idx, active: w.is_active, occupied: w.active_window_id !== null }
+                    }
                     root.wsById = map
                 } else if (evt.WorkspaceActivated) {
                     const targetId = evt.WorkspaceActivated.id
@@ -55,8 +61,8 @@ Item {
                     const map = {}
                     for (const id in root.wsById) {
                         const w = root.wsById[id]
-                        map[id] = (Number(id) === targetId)
-                            ? { idx: w.idx, active: w.active, occupied: hasWindow }
+                        map[id] = (Number(id) === targetId) 
+                            ? { idx: w.idx, active: w.active, occupied: hasWindow } 
                             : w
                     }
                     root.wsById = map
@@ -77,41 +83,58 @@ Item {
             property bool active: !!ws && ws.active
             property bool occupied: !!ws && ws.occupied
 
-            width: active ? root.maxDot : 10
-            height: width
-            radius: width / 2
-            x: index * (root.maxDot + root.gap) + (root.maxDot - width) / 2
+            // Explicit dimensions to contain the text and underline layout perfectly
+            width: 18
+            height: 24
+
+            // Position alignment calculations matching your original gap properties
+            x: index * (width + root.gap)
             y: (root.implicitHeight - height) / 2
 
-            color: active ? Theme.neonCyan
-                 : occupied ? "transparent"
-                 : Qt.rgba(1, 1, 1, 0.10)
-            border.width: occupied && !active ? 2 : 0
-            border.color: Theme.neonCyan
+            // Background sheen for the active workspace panel
+            color: active ? Qt.rgba(0, 1, 0.95, 0.08) : "transparent"
+            radius: Theme.radiusSm
 
-            Behavior on width { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
-
-            // neon glow ring behind the active dot
-            Rectangle {
-                visible: dot.active
+            // Text Number Element
+            Text {
+                id: numText
                 anchors.centerIn: parent
-                width: parent.width + 10
-                height: width
-                radius: width / 2
-                color: "transparent"
-                border.width: 5
-                border.color: Qt.rgba(0, 1, 0.95, 0.22)
+                // Offset upward slightly to account for the underline space below
+                anchors.verticalCenterOffset: active ? -2 : 0 
+
+                text: (dot.index + 1)
+                font.family: Theme.fontFamily
+                font.pixelSize: Theme.fontSize
+                font.bold: active
+
+                // Color states based on workspace conditions
+                color: active ? Theme.neonCyan
+                    : occupied ? Theme.textPrimary
+                    : Qt.rgba(1, 1, 1, 0.35) // Dim placeholder text if unoccupied
+            }
+
+            // --- Active Workspace Accent Underline ---
+            Rectangle {
+                id: activeIndicator
+                visible: dot.active
+                anchors.bottom: parent.bottom
+                anchors.horizontalCenter: parent.horizontalCenter
+
+                // Target length mirrors the numbers nicely inside the container boundaries
+                width: 14
+                height: 2
+                radius: 1
+                color: Theme.neonCyan
             }
 
             MouseArea {
                 anchors.fill: parent
-                anchors.margins: -5
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
                     wsSwitch.command = ["niri", "msg", "action", "focus-workspace", String(dot.index + 1)]
                     wsSwitch.running = true
                 }
             }
-        }
+        } 
     }
 }

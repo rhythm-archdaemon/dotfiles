@@ -24,7 +24,7 @@ PanelWindow {
             anchors.left: parent.left
             anchors.leftMargin: 16
             anchors.verticalCenter: parent.verticalCenter
-            spacing: 18
+            spacing: 8
 
             Workspaces {}
         }
@@ -35,7 +35,8 @@ PanelWindow {
             spacing: 18
 
             MediaPlayer {}
-            Cava {}
+            // issue: Cava instance is not running - so currently commenting this module
+            // Cava {}
         }
 
         // right cluster — brightness, battery, wifi, power
