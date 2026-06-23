@@ -26,7 +26,7 @@ QtObject {
 
 
     property string fontFamily: "Quantico"
-    property int fontSize: 13
+    property int fontSize: 14
     property int barHeight: 30
     property int radiusSm: 10
     property int radiusMd: 0

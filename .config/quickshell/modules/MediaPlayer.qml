@@ -23,13 +23,13 @@ RowLayout {
             text: "["
             color: root.player && root.player.canGoPrevious ? Theme.neonMagenta : Theme.textDim
             font.family: Theme.fontFamily
-            font.pixelSize: 16
+            font.pixelSize: Theme.fontSize
         }
 
         Text {
             text: "\u23EE" // ⏮
             color: prevMouse.containsMouse ? Theme.textPrimary : (root.player && root.player.canGoPrevious ? Theme.neonMagenta : Theme.textDim)
-            font.pixelSize: 16
+            font.pixelSize: Theme.fontSize
             
             MouseArea {
                 id: prevMouse
@@ -46,7 +46,7 @@ RowLayout {
             text: "]"
             color: root.player && root.player.canGoPrevious ? Theme.neonMagenta : Theme.textDim
             font.family: Theme.fontFamily
-            font.pixelSize: 16
+            font.pixelSize: Theme.fontSize
         }
     }    
 
@@ -60,13 +60,13 @@ RowLayout {
             text: "["
             color: root.player ? Theme.neonMagenta : Theme.textDim
             font.family: Theme.fontFamily
-            font.pixelSize: 16
+            font.pixelSize: Theme.fontSize
         }
 
         Text {
             text: root.playing ? "\u23F8" : "\u25B6" // ⏸ / ▶
             color: playMouse.containsMouse ? Theme.textPrimary : (root.player ? Theme.neonMagenta : Theme.textDim)
-            font.pixelSize: 16
+            font.pixelSize: Theme.fontSize
             
             MouseArea {
                 id: playMouse
@@ -83,7 +83,7 @@ RowLayout {
             text: "]"
             color: root.player ? Theme.neonMagenta : Theme.textDim
             font.family: Theme.fontFamily
-            font.pixelSize: 16
+            font.pixelSize: Theme.fontSize
         }
     }
 
@@ -97,13 +97,13 @@ RowLayout {
             text: "["
             color: root.player && root.player.canGoNext ? Theme.neonMagenta : Theme.textDim
             font.family: Theme.fontFamily
-            font.pixelSize: 16
+            font.pixelSize: Theme.fontSize
         }
 
         Text {
             text: "\u23ED" // ⏭
             color: nextMouse.containsMouse ? Theme.textPrimary : (root.player && root.player.canGoNext ? Theme.neonMagenta : Theme.textDim)
-            font.pixelSize: 16
+            font.pixelSize: Theme.fontSize
 
             MouseArea {
                 id: nextMouse
@@ -120,15 +120,15 @@ RowLayout {
             text: "]"
             color: root.player && root.player.canGoNext ? Theme.neonMagenta : Theme.textDim
             font.family: Theme.fontFamily
-            font.pixelSize: 16
+            font.pixelSize: Theme.fontSize
         }
     }
 
     Text {
         text: "|"
-        color: root.player && root.player.canGoNext ? Theme.neonMagenta : Theme.textDim
+        color: root.player && root.player.canGoNext ? Theme.neonCyan : Theme.textDim
         font.family: Theme.fontFamily
-        font.pixelSize: 16
+        font.pixelSize: Theme.fontSize
     }
 
     // --- Track Label Container ---
@@ -145,7 +145,7 @@ RowLayout {
             color: Theme.neonMagenta
             font {
                 family: Theme.fontFamily
-                pixelSize: 16
+                pixelSize: Theme.fontSize
                 bold: true
             }
 

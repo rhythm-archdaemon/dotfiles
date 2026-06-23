@@ -26,16 +26,35 @@ PanelWindow {
             anchors.verticalCenter: parent.verticalCenter
             spacing: 8
 
-            Workspaces {}
-            
+            Workspaces {
+              Layout.preferredWidth: 180 
+            }
+
+            Text {
+              text: "|"
+              color: Theme.neonCyan
+              font.family: Theme.fontFamily
+              font.pixelSize: 16
+            }
+
+            MediaPlayer {}
+
+            Text {
+              text: "|"
+              color: Theme.neonCyan
+              font.family: Theme.fontFamily
+              font.pixelSize: 16
+            }
+
         }
 
         // center cluster — now playing + cava visualizer
         RowLayout {
             anchors.centerIn: parent
             spacing: 18
+            
+            Clock {}
 
-            MediaPlayer {}
             // issue: Cava instance is not running - so currently commenting this module
             // Cava {}
         }
