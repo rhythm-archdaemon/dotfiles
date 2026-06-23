@@ -18,9 +18,7 @@ PanelWindow {
         anchors.fill: parent
         radius: Theme.radiusMd
         color: Theme.bgPanel
-        border.width: 1
-        border.color: Theme.borderDim
-
+        
         // left cluster — workspaces
         RowLayout {
             anchors.left: parent.left
