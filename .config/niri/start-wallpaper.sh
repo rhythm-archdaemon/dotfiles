@@ -6,6 +6,6 @@ awww-daemon &
 
 sleep 0.5
 
-awww img "/home/rhythm/Pictures/Wallpapers/walls/digital/a_road_with_lightning_bolts_in_the_sky.png" \
+awww img "/home/rhythm/Pictures/Wallpapers/walls/solarized/a_red_sun_over_mountains.jpg" \
   --transition-type wave \
   --transition-duration 1
