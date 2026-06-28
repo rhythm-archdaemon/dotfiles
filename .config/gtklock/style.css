@@ -1,0 +1,72 @@
+window {
+    background-image: url("/home/Pictures/Wallpapers/walls/digital/a_couple_of_people_standing_on_a_mountain.png");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: black;
+}
+
+#window-box {
+    margin-top: 80px;
+    padding: 32px;
+    background-color: transparent;
+}
+
+#clock-label {
+    color: #7aa2f7; /* Tokyo Blue */
+    font-size: 72px;
+    font-weight: bold;
+    font-family: "MesloLGS Nerd Font";
+    margin-bottom: 4px;
+}
+
+#date-label {
+    color: #565f89; /* Muted Dark Gray-Blue */
+    font-size: 24px;
+    font-family: "MesloLGS Nerd Font";
+    margin-bottom: 24px;
+}
+
+#username-label {
+    color: #bb9af7; /* Tokyo Purple Accent */
+    font-size: 16px;
+    font-family: "MesloLGS Nerd Font";
+    margin-bottom: 16px;
+    letter-spacing: 2px;
+}
+
+#input-label {
+    opacity: 0;
+    font-size: 0;
+    margin: 0;
+    padding: 0;
+}
+
+entry {
+    background-color: rgba(26, 27, 38, 0.85); /* Deep Tokyo Night Background with opacity */
+    color: #a9b1d6; /* Primary Light Text */
+    border: 1px solid #414868; /* Subtle Border Blue */
+    border-radius: 20px;
+    padding: 10px 20px;
+    font-family: "MesloLGS Nerd Font";
+    font-size: 14px;
+    caret-color: #7aa2f7; /* Blue Cursor */
+    min-width: 100px;   /* Gives the box a fixed, clean size */
+
+}
+
+entry:focus {
+    border-color: #7aa2f7; /* Sharp Blue on Focus */
+}
+
+entry.error {
+    border-color: #f7768e; /* Bright Crimson Red for Errors */
+    color: #f7768e;
+}
+
+#unlock-button {
+    opacity: 0;
+    font-size: 0;
+    margin: 0;
+    padding: 0;
+}
