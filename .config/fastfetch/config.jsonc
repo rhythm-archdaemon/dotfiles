@@ -1,151 +1,111 @@
 {
     "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
     "display": {
-        "pipe": true
+        "separator": " ── ",
+        "color": {
+            "keys": "38;2;122;162;247", // Tokyo Night Blue (#7aa2f7)
+            "title": "38;2;187;154;247" // Tokyo Night Purple (#bb9af7)
+        },
+        "key": {
+            "width": 15
+        }
     },
     "logo": {
         "type": "file",
         "source": "~/.config/fastfetch/ascii.txt",
-        "height": 1,
-        "width": 1,
         "color": {
-            "1": "red"
+            "1": "38;2;247;118;145" // Tokyo Night Red/Pink (#f7768e)
         },
         "padding": {
-            "top": 3,
-            "left": 3
+            "top": 1,
+            "left": 2
         }
     },
     "modules": [
-        "break",
+        "title",
         {
             "type": "custom",
-            "format": "\u001b[90m┌──────────────────────Hardware──────────────────────┐",
-            "keyColor": "red"
+            "format": "┌─────────────── Hardware ───────────────┐",
+            "keyColor": "38;2;86;95;137" // Tokyo Night Dark Gray/Flux (#565f89)
         },
         {
             "type": "host",
-            "key": "󰌢  PC",
-            "keyColor": "green"
+            "key": "  󰌢 Host",
+            "keyColor": "38;2;158;206;106" // Tokyo Night Green (#9ece6a)
         },
         {
             "type": "cpu",
-            "key": "│ ├󰻠 ",
-            "keyColor": "green"
+            "key": "  󰻠 CPU",
+            "keyColor": "38;2;158;206;106"
         },
-        {
-            "type": "gpu",
-            "key": "│ ├󰍹 ",
-            "keyColor": "green"
-        },
+        // {
+        //    "type": "gpu",
+        //    "key": "  󰍹 GPU",
+        //    "keyColor": "38;2;158;206;106"
+        // },
         {
             "type": "memory",
-            "key": "│ ├󰑭 ",
-            "keyColor": "green"
+            "key": "  󰑭 RAM",
+            "keyColor": "38;2;158;206;106"
         },
         {
             "type": "disk",
-            "key": "└ └󰋊 ",
-            "keyColor": "green"
-        },
-        {
-            "type": "custom",
-            "format": "\u001b[90m└────────────────────────────────────────────────────┘",
-            "keyColor": "cyan"
+            "key": "  󰋊 Disk",
+            "keyColor": "38;2;158;206;106"
         },
         "break",
         {
             "type": "custom",
-            "format": "\u001b[90m┌──────────────────────Software──────────────────────┐",
-            "keyColor": "cyan"
+            "format": "┌─────────────── Environment ────────────┐",
+            "keyColor": "38;2;86;95;137"
         },
         {
             "type": "os",
-            "key": "  OS",
-            "keyColor": "yellow"
+            "key": "   OS",
+            "keyColor": "38;2;115;218;202" // Tokyo Night Cyan (#73daca)
         },
         {
             "type": "kernel",
-            "key": "│ ├󰌽 ",
-            "keyColor": "yellow"
-        },
-        {
-            "type": "bios",
-            "key": "│ ├󰖡 ",
-            "keyColor": "yellow"
-        },
-        {
-            "type": "packages",
-            "key": "│ ├󰏗 ",
-            "keyColor": "yellow"
+            "key": "  󰌽 Kernel",
+            "keyColor": "38;2;115;218;202"
         },
         {
             "type": "shell",
-            "key": "└ └󰞷 ",
-            "keyColor": "yellow"
-        },
-        "break",
-        {
-            "type": "de",
-            "key": "󰧨  DE",
-            "keyColor": "blue"
-        },
-        {
-            "type": "lm",
-            "key": "│ ├󰍁 ",
-            "keyColor": "blue"
+            "key": "  󰞷 Shell",
+            "keyColor": "38;2;115;218;202"
         },
         {
             "type": "wm",
-            "key": "│ ├󱂬 ",
-            "keyColor": "blue"
-        },
-        {
-            "type": "wmtheme",
-            "key": "│ ├󰉦 ",
-            "keyColor": "blue"
+            "key": "  󱂬 WM",
+            "keyColor": "38;2;115;218;202"
         },
         {
             "type": "terminal",
-            "key": "└ └󰆍 ",
-            "keyColor": "blue"
-        },
-       {
-            "type": "custom",
-            "format": "\u001b[90m└────────────────────────────────────────────────────┘",
-            "keyColor": "cyan"
+            "key": "  󰆍 Term",
+            "keyColor": "38;2;115;218;202"
         },
         "break",
         {
             "type": "custom",
-            "format": "\u001b[90m┌────────────────────Uptime / Age / DT───────────────┐",
-            "keyColor": "cyan"
+            "format": "┌─────────────── Status ─────────────────┐",
+            "keyColor": "38;2;86;95;137"
         },
         {
             "type": "command",
-            "key": "  ›  OS Age  ",
-            "keyColor": "magenta",
-            "text": "birth_install=$(stat -c %W /); current=$(date +%s); time_progression=$((current - birth_install)); days_difference=$((time_progression / 86400)); echo $days_difference days"
+            "key": "  󰔚 Age",
+            "keyColor": "38;2;224;143;104", // Tokyo Night Orange (#e0af68)
+            "text": "birth_install=$(stat -c %W / 2>/dev/null || stat -f %B /); current=$(date +%s); time_progression=$((current - birth_install)); echo $((time_progression / 86400)) days"
         },
         {
             "type": "uptime",
-            "key": "  ›  Uptime  ",
-            "keyColor": "magenta"
+            "key": "  󱘖 Uptime",
+            "keyColor": "38;2;224;143;104"
         },
-        {
-            "type": "datetime",
-            "key": "  ›  DateTime  ",
-            "keyColor": "magenta"
-        },
-        {
-            "type": "custom",
-            "format": "\u001b[90m└────────────────────────────────────────────────────┘",
-            "keyColor": "cyan"
-        },
+        "break",
         {
             "type": "colors",
-            "paddingLeft": 2,
-            "symbol": "circle"
+            "symbol": "circle",
+            "paddingLeft": 2
         }
     ]
 }

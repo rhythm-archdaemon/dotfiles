@@ -1,5 +1,5 @@
 # ─── System Info ──────────────────────────────────────────────────────────────
-fastfetch --pipe false
+macchina
 
 # ─── Powerlevel10k Instant Prompt ─────────────────────────────────────────────
 typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
