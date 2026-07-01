@@ -1,0 +1,95 @@
+/**
+ * Tokyo Night palette + base widgets
+ * Shared by config.rasi, powermenu.rasi, clipboard.rasi
+ */
+
+* {
+    bg-col:       #1a1b26e6;  /* main bg, slightly transparent */
+    bg-col-alt:   #24283bcc;  /* inputbar bg */
+    fg-col:       #c0caf5;    /* main text */
+    fg-col2:      #7aa2f7;    /* accent blue */
+    purple:       #bb9af7;
+    green:        #9ece6a;
+    red:          #f7768e;
+    grey:         #414868;    /* borders / placeholder */
+    selected-col: #292e42;
+
+    background-color: transparent;
+    text-color:        @fg-col;
+}
+
+window {
+    transparency:     "real";
+    border:            2px;
+    border-color:      @fg-col2;
+    border-radius:     14px;
+    background-color:  @bg-col;
+    location:          center;
+    anchor:            center;
+    width:             600px;
+}
+
+mainbox {
+    padding:           12px;
+    background-color:  transparent;
+    children:          [ inputbar, listview ];
+}
+
+inputbar {
+    padding:            10px;
+    border-radius:      10px;
+    background-color:   @bg-col-alt;
+    text-color:          @fg-col;
+    children:            [ prompt, entry ];
+}
+
+prompt {
+    text-color: @fg-col2;
+    padding:    0 10px 0 2px;
+}
+
+entry {
+    placeholder:        "Search...";
+    placeholder-color:  @grey;
+    text-color:          @fg-col;
+}
+
+listview {
+    lines:              8;
+    columns:            1;
+    spacing:            6px;
+    fixed-height:       false;
+    border:             0px;
+    background-color:   transparent;
+    margin:             10px 0 0 0;
+}
+
+element {
+    padding:            8px 10px;
+    border-radius:      8px;
+    background-color:   transparent;
+    text-color:          @fg-col;
+}
+
+element selected {
+    background-color:  @selected-col;
+    text-color:          @fg-col2;
+    border:              1px;
+    border-color:        @fg-col2;
+    border-radius:       8px;
+}
+
+element-icon {
+    size:               22px;
+    vertical-align:     0.5;
+}
+
+element-text {
+    vertical-align:     0.5;
+    padding:            0 0 0 8px;
+}
+
+scrollbar {
+    handle-color: @grey;
+    width:        4px;
+}

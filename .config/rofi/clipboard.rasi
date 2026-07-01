@@ -1,0 +1,9 @@
+@import "tokyo-night.rasi"
+
+window {
+    width: 650px;
+}
+
+listview {
+    lines: 10;
+}
