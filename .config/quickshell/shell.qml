@@ -1,6 +1,6 @@
 import Quickshell
 import QtQuick
-import qs.modules
+import "modules"
 
 // Quickshell looks for this file. Everything else lives in modules/
 // and is auto-imported as the "qs.modules" namespace (and Theme.qml,
@@ -8,7 +8,10 @@ import qs.modules
 ShellRoot {
     Variants {
         model: Quickshell.screens
-
-        Bar {}
+        Bar { modelData: modelData }
+    }
+    Variants {
+        model: Quickshell.screens
+        Sidebar { modelData: modelData }
     }
 }
