@@ -66,10 +66,8 @@ PanelWindow {
             anchors.verticalCenter: parent.verticalCenter
             spacing: 18
 
-            Brightness {}
             Battery {}
             Wifi {}
-            PowerMenu {}
         }
     }
 }

@@ -2,20 +2,25 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import qs
+import qs.modules
 
 PanelWindow {
     id: sidebarWindow
     required property var modelData
     screen: modelData
-
     anchors { top: true; right: true }
     margins { top: Theme.barHeight; right: 0 }
     implicitHeight: screen.height - Theme.barHeight
-
     // Fixed window size (never resized) — only the inner Rectangle animates.
     implicitWidth: expandedWidth
     color: "transparent"
     exclusionMode: ExclusionMode.Ignore
+
+    // Only let input through the region actually covered by the visible panel,
+    // instead of the full (always-320px) window surface.
+    mask: Region {
+        item: panelBackground
+    }
 
     property bool isHovered: false
     readonly property int collapsedWidth: 6
@@ -42,24 +47,16 @@ PanelWindow {
             ColumnLayout {
                 anchors.fill: parent
                 anchors.margins: 20
-                spacing: 15
+                anchors.topMargin: 30
+                spacing: 28
 
-                Text {
-                    text: "QUICKSHELL SIDEBAR"
-                    color: Theme.neonMagenta
-                    font.family: Theme.fontFamily
-                    font.bold: true
-                    font.pixelSize: 16
-                }
-
-                Rectangle {
-                    Layout.fillWidth: true
-                    height: 1
-                    color: Theme.neonMagenta
-                    opacity: 0.3
-                }
-
+                Slider { kind: "brightness" }
+                Slider { kind: "volume" }
                 Item { Layout.fillHeight: true }
+                PowerRow {
+                    Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignHCenter
+                }
             }
         }
 
