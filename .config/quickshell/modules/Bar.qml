@@ -27,25 +27,8 @@ PanelWindow {
             spacing: 8
 
             Workspaces {
-              Layout.preferredWidth: 180 
+                Layout.preferredWidth: 180 
             }
-
-            Text {
-              text: "|"
-              color: Theme.neonMagenta
-              font.family: Theme.fontFamily
-              font.pixelSize: 16
-            }
-
-            MediaPlayer {}
-            
-            Text {
-              text: "|"
-              color: Theme.neonMagenta
-              font.family: Theme.fontFamily
-              font.pixelSize: 16
-            }
-
         }
 
         // center cluster — now playing + cava visualizer
