@@ -1,0 +1,53 @@
+# --- Core Window & Wallpaper Settings ---
+image=/home/rhythm/Pictures/Wallpapers/walls/gruvbox/a_city_skyline_at_night.jpg
+scaling=fill
+color=000000
+
+# --- Behavior and Fonts ---
+ignore-empty-password
+font=MesloLGS Nerd Font
+font-size=14
+
+# --- Geometry Positioning Overrides ---
+indicator-radius=110
+indicator-thickness=12
+
+# --- Tokyo Night Structural Color Sync ---
+# Inside Circle (Maps to entry background alpha blend)
+inside-color=1a1b26da
+inside-clear-color=1a1b26da
+inside-caps-lock-color=1a1b26da
+inside-ver-color=1a1b26da
+inside-wrong-color=1a1b26da
+
+# Outside Accent Ring (Maps to entry border definitions)
+ring-color=414868
+ring-clear-color=7aa2f7
+ring-caps-lock-color=bb9af7
+ring-ver-color=7aa2f7
+ring-wrong-color=f7768e
+
+# Highlight Segments (Keypress feedback)
+key-hl-color=7aa2f7
+bs-hl-color=f7768e
+caps-lock-key-hl-color=bb9af7
+caps-lock-bs-hl-color=f7768e
+
+# Subdividing Lines
+line-color=00000000
+line-clear-color=00000000
+line-caps-lock-color=00000000
+line-ver-color=00000000
+line-wrong-color=00000000
+separator-color=00000000
+
+# --- Center Text & Labels System ---
+# Primary Indicator Typography Styling
+text-color=a9b1d6
+text-clear-color=7aa2f7
+text-caps-lock-color=bb9af7
+text-ver-color=7aa2f7
+text-wrong-color=f7768e
+
+# Clean Interface: Disable standard verbose layout hints
+disable-caps-lock-text
