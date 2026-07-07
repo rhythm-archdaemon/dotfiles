@@ -18,7 +18,8 @@ PanelWindow {
 
     mask: Region { item: panelBackground }
 
-    property bool isHovered: false
+    // Direct declarative binding: Tracks the HoverHandler status smoothly
+    readonly property bool isHovered: sidebarHoverHandler.hovered
     readonly property int collapsedWidth: 6
     readonly property int expandedWidth: 400
 
@@ -33,14 +34,10 @@ PanelWindow {
             NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
         }
 
-        // Hover strip — only tracks mouse position, never claims clicks,
-        // so presses/drags fall through to the sliders below.
-        MouseArea {
-            anchors.fill: parent
-            hoverEnabled: true
-            acceptedButtons: Qt.NoButton
-            onEntered: sidebarWindow.isHovered = true
-            onExited: sidebarWindow.isHovered = false
+        // Fix: Use HoverHandler instead of MouseArea.
+        // It passively samples the pointer position without intercepting/filtering child events.
+        HoverHandler {
+            id: sidebarHoverHandler
         }
 
         ColumnLayout {
@@ -55,9 +52,9 @@ PanelWindow {
             Slider { kind: "brightness" }
             Slider { kind: "volume" }
             Item { Layout.fillHeight: true }
+            
             PowerRow {
                 Layout.fillWidth: true
-                Layout.alignment: Qt.AlignHCenter
             }
         }
     }

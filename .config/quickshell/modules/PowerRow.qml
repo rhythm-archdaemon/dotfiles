@@ -3,68 +3,67 @@ import QtQuick.Layouts
 import Quickshell.Io
 import qs
 
-// Standalone lock / reboot / power-off row. Same commands and Canvas icon
-// drawing as modules/PowerMenu.qml, sized for the sidebar.
-RowLayout {
+Item {
     id: root
-    spacing: 20
+    
+    // Simple logic: Give it explicit sizing constraints just like the Sliders
+    Layout.fillWidth: true
+    height: 46 
+    implicitWidth: 360
+    implicitHeight: height
 
     Process { id: lockProc; command: ["gtklock"] }
     Process { id: rebootProc; command: ["systemctl", "reboot"] }
     Process { id: powerProc; command: ["systemctl", "poweroff"] }
 
-    component PowerIcon: Rectangle {
-        id: btn
-        property int iconType: 0 // 0: lock, 1: reboot, 2: power
-        property color tint: Theme.neonRed
-        signal activated()
+    RowLayout {
+        anchors.fill: parent
+        spacing: 12
 
-        width: 36; height: 30
-        radius: Theme.radiusSm
-        color: mouse.containsMouse ? Qt.rgba(tint.r, tint.g, tint.b, 0.12) : "transparent"
-        border.width: 1.5
-        border.color: tint
-        Behavior on color { ColorAnimation { duration: 150 } }
+        Repeater {
+            model: [
+                { name: "LOCK",    icon: "󰌾", tint: Theme.neonCyan,   exec: () => lockProc.running = true },
+                { name: "REBOOT",  icon: "󰜉", tint: Theme.neonOrange, exec: () => rebootProc.running = true },
+                { name: "SHUTDOWN",icon: "󰐥", tint: Theme.neonRed,    exec: () => powerProc.running = true }
+            ]
 
-        Canvas {
-            anchors.centerIn: parent
-            width: 16; height: 16
-            onPaint: {
-                const ctx = getContext("2d")
-                ctx.reset()
-                ctx.strokeStyle = btn.tint
-                ctx.fillStyle = btn.tint
-                ctx.lineWidth = 1.8
-                ctx.lineCap = "round"
-                ctx.lineJoin = "round"
-                const cx = width / 2, cy = height / 2
+            delegate: Rectangle {
+                id: btn
+                Layout.fillWidth: true
+                Layout.fillHeight: true // Fills the 46px parent height safely
+                radius: Theme.radiusSm || 4
+                
+                color: mouse.containsMouse ? Qt.rgba(modelData.tint.r, modelData.tint.g, modelData.tint.b, 0.12) : "transparent"
+                border.width: 1.5
+                border.color: modelData.tint
 
-                if (btn.iconType === 0) {
-                    ctx.strokeRect(2, 7, 12, 8)
-                    ctx.beginPath(); ctx.arc(cx, 7, 4, Math.PI, 0); ctx.stroke()
-                    ctx.beginPath(); ctx.arc(cx, 11, 1.2, 0, Math.PI * 2); ctx.fill()
-                } else if (btn.iconType === 1) {
-                    ctx.beginPath(); ctx.arc(cx, cy, 6, -Math.PI * 0.3, Math.PI * 1.5); ctx.stroke()
-                    ctx.beginPath()
-                    ctx.moveTo(cx + 2, cy - 8); ctx.lineTo(cx + 6, cy - 4); ctx.lineTo(cx + 1, cy - 3)
-                    ctx.fill()
-                } else {
-                    ctx.beginPath(); ctx.arc(cx, cy + 1, 6, -Math.PI * 0.75, -Math.PI * 0.25, true); ctx.stroke()
-                    ctx.beginPath(); ctx.moveTo(cx, cy - 5); ctx.lineTo(cx, cy + 1); ctx.stroke()
+                Behavior on color { ColorAnimation { duration: 100 } }
+
+                RowLayout {
+                    anchors.centerIn: parent
+                    spacing: 8
+
+                    Text {
+                        text: modelData.icon
+                        color: modelData.tint
+                        font { family: Theme.fontFamily; pixelSize: 18; bold: true }
+                    }
+
+                    Text {
+                        text: modelData.name
+                        color: Theme.textPrimary
+                        font { family: Theme.fontFamily; pixelSize: 12; bold: true }
+                    }
+                }
+
+                MouseArea {
+                    id: mouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: modelData.exec()
                 }
             }
         }
-
-        MouseArea {
-            id: mouse
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onClicked: btn.activated()
-        }
     }
-
-    PowerIcon { iconType: 0; tint: Theme.neonCyan; onActivated: lockProc.running = true }
-    PowerIcon { iconType: 1; tint: Theme.neonOrange; onActivated: rebootProc.running = true }
-    PowerIcon { iconType: 2; tint: Theme.neonRed; onActivated: powerProc.running = true }
 }
