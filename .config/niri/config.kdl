@@ -48,7 +48,7 @@ input {
 // ══════════════════════════════════════════════════════════════════
 
 layout {
-    gaps 12
+    gaps 8
     center-focused-column "never"
 
     preset-column-widths {
@@ -61,8 +61,8 @@ layout {
 
     focus-ring {
         width 2
-        active-color "#f7768e"
-        inactive-color "#505050"
+        active-color "#7dcfff"
+        inactive-color "#383e5a"
     }
 
     border {
@@ -96,7 +96,7 @@ layout {
 
 // Rounded corners for all windows
 window-rule {
-    geometry-corner-radius 15
+    geometry-corner-radius 5
     clip-to-geometry true
 }
 
@@ -152,9 +152,9 @@ binds {
     
     Super+Alt+S     allow-when-locked=true hotkey-overlay-title=null { spawn-sh "pkill orca || exec orca"; }
     
-    Mod+T           hotkey-overlay-title="Terminal: alacritty"   { spawn "kitty" "--single-instance"; }
+    Mod+T           hotkey-overlay-title="Terminal: kitty"   { spawn "kitty" "--single-instance"; }
 
-    Mod+D           hotkey-overlay-title="Launcher: fuzzel"      { spawn "fuzzel"; }
+    Mod+D           hotkey-overlay-title="Launcher: rofi"      { spawn "rofi" "-show" "drun"; }
 
     Super+Alt+L     hotkey-overlay-title="Lock Screen: gtklock"  { spawn "gtklock"; }
 
@@ -195,8 +195,8 @@ binds {
     Mod+Up      { focus-window-up; }
     Mod+Right   { focus-column-right; }
     Mod+H       { focus-column-left; }
-    Mod+J       { focus-window-down; }
-    Mod+K       { focus-window-up; }
+    Mod+U       { focus-window-down; }
+    Mod+I       { focus-window-up; }
     Mod+L       { focus-column-right; }
 
     Mod+Home    { focus-column-first; }
@@ -209,8 +209,8 @@ binds {
     Mod+Ctrl+Up     { move-window-up; }
     Mod+Ctrl+Right  { move-column-right; }
     Mod+Ctrl+H      { move-column-left; }
-    Mod+Ctrl+J      { move-window-down; }
-    Mod+Ctrl+K      { move-window-up; }
+    Mod+Ctrl+U      { move-window-down; }
+    Mod+Ctrl+I      { move-window-up; }
     Mod+Ctrl+L      { move-column-right; }
 
     Mod+Ctrl+Home   { move-column-to-first; }
@@ -240,13 +240,13 @@ binds {
     // ── Workspaces ───────────────────────────────────────────────
     Mod+Page_Down        { focus-workspace-down; }
     Mod+Page_Up          { focus-workspace-up; }
-    Mod+U                { focus-workspace-down; }
-    Mod+I                { focus-workspace-up; }
+    Mod+J                { focus-workspace-down; }
+    Mod+K                { focus-workspace-up; }
 
     Mod+Ctrl+Page_Down   { move-column-to-workspace-down; }
     Mod+Ctrl+Page_Up     { move-column-to-workspace-up; }
-    Mod+Ctrl+U           { move-column-to-workspace-down; }
-    Mod+Ctrl+I           { move-column-to-workspace-up; }
+    Mod+Ctrl+J           { move-column-to-workspace-down; }
+    Mod+Ctrl+K           { move-column-to-workspace-up; }
 
     Mod+Shift+Page_Down  { move-workspace-down; }
     Mod+Shift+Page_Up    { move-workspace-up; }
