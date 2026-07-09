@@ -12,6 +12,11 @@ ShellRoot {
     }
     Variants {
         model: Quickshell.screens
-        Sidebar { modelData: modelData }
+        LeftSidebar { modelData: modelData }
+    }
+
+    Variants {
+        model: Quickshell.screens
+        RightSidebar { modelData: modelData }
     }
 }

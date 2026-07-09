@@ -158,7 +158,7 @@ binds {
 
     Super+Alt+L     hotkey-overlay-title="Lock Screen: gtklock"  { spawn "gtklock"; }
 
-    Mod+V           { spawn "bash" "-c" "cliphist list | fuzzel --dmenu | cliphist decode | wl-copy"; }
+    Mod+V           { spawn "bash" "-c" "sh ~/.config/rofi/scripts/clipboard.sh"; }
 
     Mod+Shift+W     { spawn "~/.config/niri/start-wallpaper.sh"; }
 
