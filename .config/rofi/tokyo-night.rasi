@@ -22,7 +22,7 @@ window {
     transparency:     "real";
     border:            2px;
     border-color:      @fg-col2;
-    border-radius:     14px;
+    border-radius:     5px;
     background-color:  @bg-col;
     location:          center;
     anchor:            center;
@@ -37,7 +37,8 @@ mainbox {
 
 inputbar {
     padding:            10px;
-    border-radius:      10px;
+    border-radius:      5px;
+    border-color:       @green;
     background-color:   @bg-col-alt;
     text-color:          @fg-col;
     children:            [ prompt, entry ];
@@ -52,6 +53,16 @@ entry {
     placeholder:        "Search...";
     placeholder-color:  @grey;
     text-color:          @fg-col;
+}
+
+gridview {
+    lines:              8;
+    columns:            2;
+    spacing:            6px;
+    fixed-height:       false;
+    border:             2px;
+    background-color:   transparent;
+    margin:             10px 0 0 0;
 }
 
 listview {

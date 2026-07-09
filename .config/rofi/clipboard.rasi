@@ -7,3 +7,13 @@ window {
 listview {
     lines: 10;
 }
+
+/* Style the Reset entry to stand out */
+element-text {
+    highlight: bold;
+}
+
+element selected.normal {
+    background-color: #f7768e;
+    text-color: #1a1b26;
+}
