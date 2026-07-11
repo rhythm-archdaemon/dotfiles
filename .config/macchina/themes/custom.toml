@@ -1,0 +1,32 @@
+# ~/.config/macchina/themes/shiva.toml
+#
+# Custom theme built around an ASCII conversion of your meditating-Shiva
+# artwork. Colors follow Tokyo Night.
+
+spacing = 1
+padding = 1
+separator = "-->"
+
+key_color = "#7aa2f7"
+separator_color = "#565f89"
+
+[custom_ascii]
+path = "~/.config/macchina/ascii/cross.txt"
+color = "#c0caf5"
+
+[box]
+border = "plain"
+visible = true
+
+[box.inner_margin]
+x = 2
+y = 0
+
+[palette]
+type = "Dark"
+visible = true
+glyph = "⬤ "
+
+[randomize]
+key_color = false
+separator_color = false
