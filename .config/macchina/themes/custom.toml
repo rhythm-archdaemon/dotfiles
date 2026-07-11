@@ -11,7 +11,7 @@ key_color = "#7aa2f7"
 separator_color = "#565f89"
 
 [custom_ascii]
-path = "~/.config/macchina/ascii/cross.txt"
+path = "~/.config/macchina/ascii/blackhole.txt"
 color = "#c0caf5"
 
 [box]
