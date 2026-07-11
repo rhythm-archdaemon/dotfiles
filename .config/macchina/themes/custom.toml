@@ -5,7 +5,7 @@
 
 spacing = 1
 padding = 1
-separator = "-->"
+separator = "|"
 
 key_color = "#7aa2f7"
 separator_color = "#565f89"

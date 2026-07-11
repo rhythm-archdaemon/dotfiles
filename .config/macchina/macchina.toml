@@ -1,2 +1,3 @@
 # ~/.config/macchina/macchina.toml
 theme = "custom"
+show = []
