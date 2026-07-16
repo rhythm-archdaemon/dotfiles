@@ -51,9 +51,6 @@ PanelWindow {
             Slider { kind: "volume" }
             Item { Layout.fillHeight: true }
 
-            PowerRow {
-                Layout.fillWidth: true
-            }
         }
     }
 }

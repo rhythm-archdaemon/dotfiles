@@ -47,8 +47,9 @@ PanelWindow {
             opacity: rightSidebarWindow.isHovered ? 1.0 : 0.0
             Behavior on opacity { NumberAnimation { duration: 150 } }
 
-            Slider { kind: "brightness" }
-            Slider { kind: "volume" }
+            //Slider { kind: "brightness" }
+            //Slider { kind: "volume" }
+            //replace slider with something else
             Item { Layout.fillHeight: true }
 
             PowerRow {
