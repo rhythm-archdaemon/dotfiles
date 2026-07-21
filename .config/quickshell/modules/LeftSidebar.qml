@@ -50,6 +50,10 @@ PanelWindow {
             Slider { kind: "brightness" }
             Slider { kind: "volume" }
             Item { Layout.fillHeight: true }
+            UserInfo {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
 
         }
     }
