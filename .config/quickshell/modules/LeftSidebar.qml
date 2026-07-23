@@ -46,14 +46,17 @@ PanelWindow {
             spacing: 28
             opacity: leftSidebarWindow.isHovered ? 1.0 : 0.0
             Behavior on opacity { NumberAnimation { duration: 150 } }
-
-            Slider { kind: "brightness" }
-            Slider { kind: "volume" }
-            Item { Layout.fillHeight: true }
+            
             UserInfo {
                 Layout.fillWidth: true
-                Layout.fillHeight: true
             }
+            
+            MediaPlayer { Layout.fillWidth: true }
+            
+            Slider { kind: "volume" }
+            Slider { kind: "brightness" }
+            Item { Layout.fillHeight: true }
+            
 
         }
     }

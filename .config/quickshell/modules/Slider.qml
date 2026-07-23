@@ -69,7 +69,7 @@ Item {
         color: "transparent"
         border.width: 1
         border.color: root.accent
-        radius: Theme.radiusSm || 4
+        radius: Theme.radiusSm
 
         ColumnLayout {
             id: content
