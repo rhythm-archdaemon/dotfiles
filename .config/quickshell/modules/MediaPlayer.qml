@@ -3,203 +3,112 @@ import QtQuick.Layouts
 import Quickshell.Services.Mpris
 import qs
 
-RowLayout {
+Rectangle {
     id: root
-    spacing: 8 // Tighter spacing for a compact bar layout
+
+    Layout.fillWidth: true
+    implicitHeight: content.implicitHeight + 28
+
+    radius: 5
+    color: "transparent"
+    border.width: 1
+    border.color: Theme.neonRed
 
     readonly property var player: Mpris.players.values.length > 0 ? Mpris.players.values[0] : null
-    readonly property bool playing: !!root.player && root.player.playbackState === MprisPlaybackState.Playing
-    readonly property string trackLabel: root.player
-        ? (root.player.trackTitle || "Unknown Track")
-        : "No media playing"
+    readonly property bool playing: !!player && player.playbackState === MprisPlaybackState.Playing
 
-    // --- Compact Previous Button ---
-    RowLayout {
-        id: prevButton
-        Layout.alignment: Qt.AlignVCenter
-        spacing: 2
+    component ControlBtn: Rectangle {
+        id: btn
+        property string glyph: ""
+        property color tint: Theme.neonMagenta
+        property bool enabled: true
+        signal activated()
+
+        width: 34; height: 34
+        radius: Theme.radiusSm
+        opacity: enabled ? 1 : 0.35
+        color: mouse.containsMouse && enabled ? tint : "transparent"
+        border.width: 1
+        border.color: tint
+        Behavior on color { ColorAnimation { duration: 120 } }
 
         Text {
-            text: "["
-            color: root.player && root.player.canGoPrevious ? Theme.neonMagenta : Theme.textDim
+            anchors.centerIn: parent
+            text: btn.glyph
+            color: mouse.containsMouse && btn.enabled ? Theme.bgPanel : btn.tint
+            font.pixelSize: 15
+        }
+        MouseArea {
+            id: mouse
+            anchors.fill: parent
+            hoverEnabled: true
+            enabled: btn.enabled
+            cursorShape: Qt.PointingHandCursor
+            onClicked: btn.activated()
+        }
+    }
+
+    ColumnLayout {
+        id: content
+        anchors.fill: parent
+        anchors.margins: 14
+        spacing: 12
+
+        Text {
+            text: "NOW PLAYING"
+            color: Theme.neonRed
             font.family: Theme.fontFamily
-            font.pixelSize: Theme.fontSize
+            font.bold: true
+            font.pixelSize: 12
         }
 
-        Text {
-            text: "\u23EE" // ⏮
-            color: prevMouse.containsMouse ? Theme.textPrimary : (root.player && root.player.canGoPrevious ? Theme.neonMagenta : Theme.textDim)
-            font.pixelSize: Theme.fontSize
-            
-            MouseArea {
-                id: prevMouse
-                anchors.fill: parent
-                anchors.margins: -4
-                hoverEnabled: true
-                cursorShape: root.player && root.player.canGoPrevious ? Qt.PointingHandCursor : Qt.ArrowCursor
+        // --- Track info ---
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: 5
+
+            Text {
+                Layout.fillWidth: true
+                elide: Text.ElideRight
+                text: root.player ? (root.player.trackTitle || "Unknown Track") : "Nothing playing"
+                color: Theme.neonMagenta
+                font.family: Theme.fontFamily
+                font.bold: true
+                font.pixelSize: 14
+            }
+            Text {
+                Layout.fillWidth: true
+                elide: Text.ElideRight
+                visible: !!root.player && !!root.player.trackArtist
+                text: root.player ? (root.player.trackArtist || "") : ""
+                color: Theme.textDim
+                font.family: Theme.fontFamily
+                font.pixelSize: 12
+            }
+        }
+
+        // --- Controls ---
+        RowLayout {
+            Layout.alignment: Qt.AlignHCenter
+            spacing: 18
+
+            ControlBtn {
+                glyph: "\u23EE"
+                tint: Theme.neonRed
                 enabled: !!root.player && root.player.canGoPrevious
-                onClicked: root.player.previous()
+                onActivated: root.player.previous()
             }
-        }
-
-        Text {
-            text: "]"
-            color: root.player && root.player.canGoPrevious ? Theme.neonMagenta : Theme.textDim
-            font.family: Theme.fontFamily
-            font.pixelSize: Theme.fontSize
-        }
-    }    
-
-    // --- Compact Play/Pause Button ---
-    RowLayout {
-        id: playButton
-        Layout.alignment: Qt.AlignVCenter
-        spacing: 2
-
-        Text {
-            text: "["
-            color: root.player ? Theme.neonMagenta : Theme.textDim
-            font.family: Theme.fontFamily
-            font.pixelSize: Theme.fontSize
-        }
-
-        Text {
-            text: root.playing ? "\u23F8" : "\u25B6" // ⏸ / ▶
-            color: playMouse.containsMouse ? Theme.textPrimary : (root.player ? Theme.neonMagenta : Theme.textDim)
-            font.pixelSize: Theme.fontSize
-            
-            MouseArea {
-                id: playMouse
-                anchors.fill: parent
-                anchors.margins: -4
-                hoverEnabled: true
-                cursorShape: root.player ? Qt.PointingHandCursor : Qt.ArrowCursor
+            ControlBtn {
+                glyph: root.playing ? "\u23F8" : "\u25B6"
+                tint: Theme.neonGreen
                 enabled: !!root.player
-                onClicked: root.playing ? root.player.pause() : root.player.play()
+                onActivated: root.playing ? root.player.pause() : root.player.play()
             }
-        }
-
-        Text {
-            text: "]"
-            color: root.player ? Theme.neonMagenta : Theme.textDim
-            font.family: Theme.fontFamily
-            font.pixelSize: Theme.fontSize
-        }
-    }
-
-    // --- Compact Next Button ---
-    RowLayout {
-        id: nextButton
-        Layout.alignment: Qt.AlignVCenter
-        spacing: 2
-
-        Text {
-            text: "["
-            color: root.player && root.player.canGoNext ? Theme.neonMagenta : Theme.textDim
-            font.family: Theme.fontFamily
-            font.pixelSize: Theme.fontSize
-        }
-
-        Text {
-            text: "\u23ED" // ⏭
-            color: nextMouse.containsMouse ? Theme.textPrimary : (root.player && root.player.canGoNext ? Theme.neonMagenta : Theme.textDim)
-            font.pixelSize: Theme.fontSize
-
-            MouseArea {
-                id: nextMouse
-                anchors.fill: parent
-                anchors.margins: -4
-                hoverEnabled: true
-                cursorShape: root.player && root.player.canGoNext ? Qt.PointingHandCursor : Qt.ArrowCursor
+            ControlBtn {
+                glyph: "\u23ED"
+                tint: Theme.neonRed
                 enabled: !!root.player && root.player.canGoNext
-                onClicked: root.player.next()
-            }
-        }
-
-        Text {
-            text: "]"
-            color: root.player && root.player.canGoNext ? Theme.neonMagenta : Theme.textDim
-            font.family: Theme.fontFamily
-            font.pixelSize: Theme.fontSize
-        }
-    }
-
-    Text {
-        text: "|"
-        color: root.player && root.player.canGoNext ? Theme.neonMagenta : Theme.textDim
-        font.family: Theme.fontFamily
-        font.pixelSize: Theme.fontSize
-    }
-
-    // --- Track Label Container ---
-    Item {
-        id: labelContainer
-        Layout.alignment: Qt.AlignVCenter
-        Layout.preferredWidth: 130
-        height: textElement.implicitHeight
-        clip: true
-        
-        Text {
-            id: textElement
-            text: root.trackLabel
-            color: Theme.neonMagenta
-            font {
-                family: Theme.fontFamily
-                pixelSize: Theme.fontSize
-                bold: true
-            }
-
-            readonly property bool needsScrolling: implicitWidth > labelContainer.width
-            
-            x: needsScrolling ? currentX : 0
-            property real currentX: 0
-
-            // --- Reset on Pause Watcher ---
-            Connections {
-                target: root
-                function onPlayingChanged() {
-                    if (!root.playing) {
-                        marqueeAnimation.stop()
-                        textElement.currentX = 0
-                    }
-                }
-            }
-
-            SequentialAnimation on currentX {
-                id: marqueeAnimation
-                running: textElement.needsScrolling && root.playing
-                loops: Animation.Infinite
-                alwaysRunToEnd: false
-
-                PauseAnimation { duration: 1200 }
-
-                PropertyAnimation {
-                    to: -(textElement.implicitWidth - labelContainer.width)
-                    easing.type: Easing.Linear
-                    duration: {
-                        var distance = textElement.implicitWidth - labelContainer.width;
-                        var pixelsPerSecond = 20; 
-                        return (distance / pixelsPerSecond) * 1000;
-                    }
-                }
-                
-                PauseAnimation { duration: 1200 }
-
-                PropertyAnimation {
-                    to: 0
-                    duration: 0
-                }
-            }
-
-            onTextChanged: {
-                currentX = 0
-                marqueeAnimation.restart()
-            }
-            
-            onNeedsScrollingChanged: {
-                if (!needsScrolling) {
-                    currentX = 0
-                }
+                onActivated: root.player.next()
             }
         }
     }
