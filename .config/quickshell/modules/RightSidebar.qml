@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Wayland
 import qs
 import qs.modules
 
@@ -8,6 +9,8 @@ PanelWindow {
     id: rightSidebarWindow
     required property var modelData
     screen: modelData
+
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
 
     anchors { top: true; right: true }
     margins { top: Theme.barHeight; right: 0 }
@@ -47,9 +50,8 @@ PanelWindow {
             opacity: rightSidebarWindow.isHovered ? 1.0 : 0.0
             Behavior on opacity { NumberAnimation { duration: 150 } }
 
-            //Slider { kind: "brightness" }
-            //Slider { kind: "volume" }
-            //replace slider with something else
+            WifiConnect { Layout.fillWidth: true }
+
             Item { Layout.fillHeight: true }
 
             PowerRow {
