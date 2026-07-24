@@ -55,6 +55,9 @@ PanelWindow {
             
             Slider { kind: "volume" }
             Slider { kind: "brightness" }
+            
+            SystemInfo { Layout.fillWidth: true }
+
             Item { Layout.fillHeight: true }
             
 
