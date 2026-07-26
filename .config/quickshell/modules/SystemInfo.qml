@@ -17,6 +17,7 @@ Rectangle {
 
     property int cpuPercent: 0
     property int memPercent: 0
+    property int diskPercent: 0
     property string uptimeText: ""
     property var lastCpu: null
 
@@ -37,7 +38,7 @@ Rectangle {
         RowLayout {
             Layout.fillWidth: true
             spacing: 10
-            Text { text: "cpu"; color: Theme.neonYellow; font.family: Theme.fontFamily; font.pixelSize: 12; Layout.preferredWidth: 32 }
+            Text { text: "cpu"; color: Theme.neonGreen; font.family: Theme.fontFamily; font.pixelSize: 12; Layout.preferredWidth: 32 }
             Rectangle {
                 Layout.fillWidth: true
                 height: 6; radius: 3
@@ -55,7 +56,7 @@ Rectangle {
         RowLayout {
             Layout.fillWidth: true
             spacing: 10
-            Text { text: "mem"; color: Theme.neonYellow; font.family: Theme.fontFamily; font.pixelSize: 12; Layout.preferredWidth: 32 }
+            Text { text: "mem"; color: Theme.neonGreen; font.family: Theme.fontFamily; font.pixelSize: 12; Layout.preferredWidth: 32 }
             Rectangle {
                 Layout.fillWidth: true
                 height: 6; radius: 3
@@ -70,11 +71,42 @@ Rectangle {
             Text { text: root.memPercent + "%"; color: Theme.textPrimary; font.family: Theme.fontFamily; font.pixelSize: 12; Layout.preferredWidth: 38; horizontalAlignment: Text.AlignRight }
         }
 
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 10
+            Text { text: "disk"; color: Theme.neonGreen; font.family: Theme.fontFamily; font.pixelSize: 12; Layout.preferredWidth: 32 }
+            Rectangle {
+                Layout.fillWidth: true
+                height: 6; radius: 3
+                color: Theme.bgCard
+                Rectangle {
+                    height: parent.height; radius: 3
+                    width: parent.width * Math.min(root.diskPercent, 100) / 100
+                    color: Theme.neonGreen
+                    Behavior on width { NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
+                }
+            }
+            Text { text: root.diskPercent + "%"; color: Theme.textPrimary; font.family: Theme.fontFamily; font.pixelSize: 12; Layout.preferredWidth: 38; horizontalAlignment: Text.AlignRight }
+        }
+
         Text {
             text: "up " + root.uptimeText
             color: Theme.textDim
             font.family: Theme.fontFamily
             font.pixelSize: 12
+        }
+    }
+
+    // df has no equivalent under /proc — root filesystem usage % via a
+    // one-shot process instead, polled on the same timer as everything else.
+    Process {
+        id: diskProc
+        command: ["df", "--output=pcent", "/"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const match = /(\d+)%/.exec(this.text)
+                if (match) root.diskPercent = parseInt(match[1])
+            }
         }
     }
 
@@ -86,7 +118,7 @@ Rectangle {
         interval: 2000
         running: true
         repeat: true
-        onTriggered: { cpuFile.reload(); memFile.reload(); uptimeFile.reload() }
+        onTriggered: { cpuFile.reload(); memFile.reload(); uptimeFile.reload(); diskProc.running = true }
     }
 
     function parseCpu(content) {
