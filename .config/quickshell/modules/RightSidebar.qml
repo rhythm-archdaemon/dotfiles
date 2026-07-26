@@ -52,6 +52,8 @@ PanelWindow {
 
             WifiConnect { Layout.fillWidth: true }
 
+            NotificationPanel { Layout.fillWidth: true }
+
             Item { Layout.fillHeight: true }
 
             PowerRow {
