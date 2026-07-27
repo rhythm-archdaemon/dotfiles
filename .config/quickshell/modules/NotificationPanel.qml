@@ -1,12 +1,10 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
+import Quickshell
 import Quickshell.Services.Notifications
 import qs
 
-// Standalone notification history module. Backed directly by Quickshell's
-// NotificationServer — trackedNotifications is a live ObjectModel, so the
-// list here stays in sync automatically as notifications arrive/expire.
 Rectangle {
     id: root
 
@@ -27,6 +25,18 @@ Rectangle {
         imageSupported: true
     }
 
+    Connections {
+        target: server
+        function onNotification(notification) {
+            lockComponent.createObject(server, { object: notification, locked: true })
+        }
+    }
+
+    Component {
+        id: lockComponent
+        RetainableLock {}
+    }
+
     function urgencyColor(u) {
         if (u === NotificationUrgency.Critical) return Theme.neonRed
         if (u === NotificationUrgency.Low) return Theme.textDim
@@ -43,7 +53,7 @@ Rectangle {
             Text { text: "NOTIFICATIONS"; color: Theme.neonYellow; font.family: Theme.fontFamily; font.bold: true; font.pixelSize: 12 }
             Item { Layout.fillWidth: true }
             Text {
-                text: server.trackedNotifications.count
+                text: notifRepeater.count
                 color: Theme.neonMagenta
                 font.family: Theme.fontFamily
                 font.bold: true
@@ -60,9 +70,8 @@ Rectangle {
                     anchors.margins: -4
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        // Copy first: dismissing mutates trackedNotifications live.
                         const list = []
-                        for (let i = 0; i < server.trackedNotifications.count; i++)
+                        for (let i = 0; i < server.trackedNotifications.rowCount(); i++)
                             list.push(server.trackedNotifications.get(i))
                         list.forEach(n => n.dismiss())
                     }
@@ -83,7 +92,7 @@ Rectangle {
                 Text {
                     Layout.fillWidth: true
                     Layout.topMargin: 12
-                    visible: server.trackedNotifications.count === 0
+                    visible: notifRepeater.count === 0
                     horizontalAlignment: Text.AlignHCenter
                     text: "no notifications"
                     color: Theme.textDim
@@ -92,6 +101,7 @@ Rectangle {
                 }
 
                 Repeater {
+                    id: notifRepeater
                     model: server.trackedNotifications
 
                     delegate: Rectangle {
@@ -141,7 +151,7 @@ Rectangle {
                             Text {
                                 Layout.fillWidth: true
                                 wrapMode: Text.Wrap
-                                text: card.modelData.summary
+                                text: card.modelData.summary || ""
                                 color: Theme.textPrimary
                                 font.family: Theme.fontFamily
                                 font.bold: true
@@ -154,7 +164,7 @@ Rectangle {
                                 wrapMode: Text.Wrap
                                 maximumLineCount: 3
                                 elide: Text.ElideRight
-                                text: card.modelData.body
+                                text: card.modelData.body || ""
                                 color: Theme.textDim
                                 font.family: Theme.fontFamily
                                 font.pixelSize: 12
@@ -163,10 +173,10 @@ Rectangle {
                             RowLayout {
                                 Layout.fillWidth: true
                                 spacing: 6
-                                visible: card.modelData.actions.length > 0
+                                visible: (card.modelData.actions || []).length > 0
 
                                 Repeater {
-                                    model: card.modelData.actions
+                                    model: card.modelData.actions || []
                                     delegate: Rectangle {
                                         required property var modelData
                                         implicitWidth: actionLbl.implicitWidth + 16
@@ -180,7 +190,7 @@ Rectangle {
                                         Text {
                                             id: actionLbl
                                             anchors.centerIn: parent
-                                            text: parent.modelData.text
+                                            text: parent.modelData.text || ""
                                             color: actionMouse.containsMouse ? Theme.bgPanel : Theme.neonGreen
                                             font.family: Theme.fontFamily
                                             font.pixelSize: 10
