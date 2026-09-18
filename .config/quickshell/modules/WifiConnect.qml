@@ -5,9 +5,8 @@ import Quickshell.Io
 import Quickshell.Wayland
 import qs
 
-// Standalone wifi module. Lists top 15 SSIDs (connected network pinned to
-// top), each with a Connect button; pressing it reveals an inline password
-// row. "+ ADD NETWORK" opens a manual SSID/password entry container.
+// Standalone wifi module. Lists saved NetworkManager profiles first, followed
+// by the top 15 visible SSIDs. Saved profiles can reconnect without a password.
 Item {
     id: root
 
@@ -16,6 +15,7 @@ Item {
     implicitHeight: containerHeight
 
     property var networks: []
+    property var savedNetworks: []
     property string expandedSsid: ""
     property bool addingNetwork: false
 
@@ -28,6 +28,25 @@ Item {
         if (win && win.WlrLayershell)
             win.WlrLayershell.keyboardFocus = WlrKeyboardFocus.OnDemand
         scanProc.running = true
+        savedProc.running = true
+    }
+
+    Process {
+        id: savedProc
+        command: ["nmcli", "-t", "-f", "NAME,TYPE", "connection", "show"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const list = []
+                for (const line of this.text.trim().split("\n")) {
+                    if (!line) continue
+                    const separator = line.lastIndexOf(":")
+                    if (separator < 0 || line.slice(separator + 1) !== "802-11-wireless") continue
+                    const profile = line.slice(0, separator).replace(/\\:/g, ":").replace(/\\\\/g, "\\")
+                    if (profile) list.push({ ssid: profile, saved: true, secured: true, active: false })
+                }
+                root.savedNetworks = list
+            }
+        }
     }
 
     Process {
@@ -53,6 +72,13 @@ Item {
 
     function connectTo(ssid, password) {
         connectProc.command = password ? ["nmcli", "dev", "wifi", "connect", ssid, "password", password] : ["nmcli", "dev", "wifi", "connect", ssid]
+        connectProc.running = true
+        expandedSsid = ""
+        addingNetwork = false
+    }
+
+    function reconnectTo(profile) {
+        connectProc.command = ["nmcli", "connection", "up", "id", profile]
         connectProc.running = true
         expandedSsid = ""
         addingNetwork = false
@@ -132,7 +158,7 @@ Item {
                 }
                 ActionBtn {
                     label: "󰜉"; tint: Theme.neonPurple
-                    onActivated: scanProc.running = true
+                    onActivated: { scanProc.running = true; savedProc.running = true }
                 }
             }
 
@@ -181,7 +207,7 @@ Item {
                     spacing: 8
 
                     Repeater {
-                        model: root.networks
+                        model: root.savedNetworks.concat(root.networks)
 
                         delegate: ColumnLayout {
                             Layout.fillWidth: true
@@ -191,9 +217,9 @@ Item {
                                 Layout.fillWidth: true
                                 height: 40
                                 radius: 3
-                                color: modelData.active ? Qt.rgba(Theme.neonCyan.r, Theme.neonCyan.g, Theme.neonCyan.b, 0.12) : "transparent"
-                                border.width: 1
-                                border.color: modelData.active ? Theme.neonCyan : Theme.borderDim
+                        color: modelData.active ? Qt.rgba(Theme.neonCyan.r, Theme.neonCyan.g, Theme.neonCyan.b, 0.12) : (modelData.saved ? Qt.rgba(Theme.neonPurple.r, Theme.neonPurple.g, Theme.neonPurple.b, 0.10) : "transparent")
+                        border.width: 1
+                        border.color: modelData.active ? Theme.neonCyan : (modelData.saved ? Theme.neonPurple : Theme.borderDim)
 
                                 RowLayout {
                                     anchors.fill: parent
@@ -210,15 +236,22 @@ Item {
                                         font.family: Theme.fontFamily
                                         font.pixelSize: 13
                                     }
-                                    Text { text: modelData.signal + "%"; color: Theme.neonYellow; font.family: Theme.fontFamily; font.pixelSize: 11 }
+                                    Text {
+                                        text: modelData.saved ? "SAVED" : modelData.signal + "%"
+                                        color: modelData.saved ? Theme.neonPurple : Theme.neonYellow
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 11
+                                    }
 
                                     ActionBtn {
-                                        label: modelData.active ? "ACTIVE" : "CONNECT"
-                                        tint: Theme.neonGreen
+                                        label: modelData.active ? "ACTIVE" : (modelData.saved ? "RECONNECT" : "CONNECT")
+                                        tint: modelData.saved ? Theme.neonPurple : Theme.neonGreen
                                         enabled: !modelData.active
                                         onActivated: {
                                             addingNetwork = false
-                                            if (modelData.secured) {
+                                            if (modelData.saved) {
+                                                reconnectTo(modelData.ssid)
+                                            } else if (modelData.secured) {
                                                 expandedSsid = (expandedSsid === modelData.ssid) ? "" : modelData.ssid
                                                 if (expandedSsid === modelData.ssid) Qt.callLater(() => passField.forceActiveFocus())
                                             } else {
@@ -231,7 +264,7 @@ Item {
 
                             Rectangle {
                                 Layout.fillWidth: true
-                                visible: expandedSsid === modelData.ssid
+                                visible: !modelData.saved && expandedSsid === modelData.ssid
                                 implicitHeight: visible ? passRow.implicitHeight + 16 : 0
                                 radius: 3
                                 color: Theme.bgCard
