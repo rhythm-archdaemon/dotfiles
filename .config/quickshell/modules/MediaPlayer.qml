@@ -14,8 +14,34 @@ Rectangle {
     border.width: 1
     border.color: Theme.neonRed
 
-    readonly property var player: Mpris.players.values.length > 0 ? Mpris.players.values[0] : null
-    readonly property bool playing: !!player && player.playbackState === MprisPlaybackState.Playing
+    // MPRIS also exposes browsers and video players. Do not blindly use the
+    // first player: ObjectModel order is not a reliable indication of the
+    // player currently playing music.
+    function isMusicPlayer(candidate) {
+        if (!candidate || !candidate.trackTitle || !candidate.trackArtist) return false
+
+        const identity = ((candidate.identity || "") + " " + (candidate.desktopEntry || "")).toLowerCase()
+        const nonMusicPlayers = [
+            "firefox", "chromium", "chrome", "brave", "vivaldi", "opera", "browser",
+            "youtube", "mpv", "vlc", "celluloid", "totem", "haruna", "video"
+        ]
+        return !nonMusicPlayers.some(name => identity.includes(name))
+    }
+
+    readonly property var player: {
+        const players = Mpris.players.values
+        // Prefer a qualifying player that is actually playing.
+        for (const candidate of players) {
+            if (candidate.playbackState === MprisPlaybackState.Playing && isMusicPlayer(candidate))
+                return candidate
+        }
+        // Keep a paused music player available so its play button can resume it.
+        for (const candidate of players) {
+            if (isMusicPlayer(candidate)) return candidate
+        }
+        return null
+    }
+    readonly property bool playing: !!root.player && root.player.playbackState === MprisPlaybackState.Playing
 
     component ControlBtn: Rectangle {
         id: btn
