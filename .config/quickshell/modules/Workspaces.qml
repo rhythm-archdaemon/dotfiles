@@ -25,8 +25,8 @@ Item {
         return null
     }
 
-    implicitWidth: wsCount * maxDot + (wsCount - 1) * gap
-    implicitHeight: maxDot
+    implicitWidth: wsCount * 18 + (wsCount - 1) * gap
+    implicitHeight: 24
 
     Process {
         id: niriEvents
@@ -61,8 +61,8 @@ Item {
                     const map = {}
                     for (const id in root.wsById) {
                         const w = root.wsById[id]
-                        map[id] = (Number(id) === targetId) 
-                            ? { idx: w.idx, active: w.active, occupied: hasWindow } 
+                        map[id] = (Number(id) === targetId)
+                            ? { idx: w.idx, active: w.active, occupied: hasWindow }
                             : w
                     }
                     root.wsById = map
@@ -85,26 +85,27 @@ Item {
 
             // Explicit dimensions to contain the text and underline layout perfectly
             width: 18
-            height: 24
+            height: 20
 
             // Position alignment calculations matching your original gap properties
             x: index * (width + root.gap)
-            y: (root.implicitHeight - height) / 2
+            y: (root.implicitHeight - height) / 2 + 2
 
-            // change this for Background clor for active workspace
-            color: active ? Theme.bgPanel : "transparent"
-            //radius: Theme.radiusSm 
+            color: "transparent"
+            border.width: 0
 
             // Text Number Element
             Text {
                 id: numText
                 anchors.centerIn: parent
                 // Offset upward slightly to account for the underline space below
-                anchors.verticalCenterOffset: active ? -1 : 0 
+                anchors.verticalCenterOffset: active ? -2 : 0
+                scale: active ? 1.25 : 1.0
+                Behavior on scale { NumberAnimation { duration: 160; easing.type: Easing.OutBack } }
 
                 text: (dot.index + 1)
                 font.family: Theme.fontFamily
-                font.pixelSize: 15
+                font.pixelSize: 12
                 font.bold: active
 
                 // Color states based on workspace conditions
@@ -121,10 +122,19 @@ Item {
                 anchors.horizontalCenter: parent.horizontalCenter
 
                 // Target length mirrors the numbers nicely inside the container boundaries
-                width: 14
+                width: active ? 12 : 0
                 height: 2
                 radius: 1
                 color: Theme.neonCyan
+                opacity: 0.95
+                Behavior on width { NumberAnimation { duration: 160 } }
+
+                SequentialAnimation on opacity {
+                    running: dot.active
+                    loops: Animation.Infinite
+                    NumberAnimation { to: 0.35; duration: 700 }
+                    NumberAnimation { to: 1.0; duration: 700 }
+                }
             }
 
             MouseArea {
@@ -135,6 +145,6 @@ Item {
                     wsSwitch.running = true
                 }
             }
-        } 
+        }
     }
 }
