@@ -11,11 +11,14 @@ Item {
     id: root
 
     Layout.fillWidth: true
-    property real containerHeight: 260
+    // Extra height leaves room for saved profiles, visible networks, and
+    // inline password forms without making the list feel cramped.
+    property real containerHeight: 390
     implicitHeight: containerHeight
 
     property var networks: []
     property var savedNetworks: []
+    property bool showSavedNetworks: false
     property string expandedSsid: ""
     property bool addingNetwork: false
 
@@ -92,8 +95,8 @@ Item {
         property bool enabled: true
         signal activated()
 
-        implicitWidth: lbl.implicitWidth + 20
-        implicitHeight: 26
+        implicitWidth: lbl.implicitWidth + 14
+        implicitHeight: 24
         radius: 3
         opacity: enabled ? 1 : 0.5
         color: mouse.containsMouse && enabled ? tint : "transparent"
@@ -135,21 +138,42 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: 5
-        color: "transparent"
+        color: Theme.bgPanel
+        clip: true
         border.width: 1
         border.color: Theme.neonBlue
+
+        Rectangle {
+            z: 2
+            x: 0
+            y: -height
+            width: parent.width
+            height: 1
+            color: Theme.neonBlue
+            opacity: 0.2
+
+            SequentialAnimation on y {
+                loops: Animation.Infinite
+                NumberAnimation { to: root.height; duration: 4200; easing.type: Easing.Linear }
+                PauseAnimation { duration: 800 }
+            }
+        }
+        Rectangle { width: 18; height: 2; x: 8; y: 7; color: Theme.neonBlue }
+        Rectangle { width: 2; height: 18; x: 8; y: 7; color: Theme.neonBlue }
+        Rectangle { width: 18; height: 2; anchors.right: parent.right; anchors.rightMargin: 8; y: 7; color: Theme.neonPurple }
+        Rectangle { width: 2; height: 18; anchors.right: parent.right; anchors.rightMargin: 8; y: 7; color: Theme.neonPurple }
 
         ColumnLayout {
             anchors.fill: parent
             anchors.margins: 14
-            spacing: 12
+            spacing: 10
 
             RowLayout {
                 Layout.fillWidth: true
-                Text { text: "WIFI NETWORKS"; color: Theme.neonBlue; font.family: Theme.fontFamily; font.bold: true; font.pixelSize: 12 }
+                Text { text: "// NETWORK MATRIX"; color: Theme.neonBlue; font.family: Theme.fontFamily; font.bold: true; font.pixelSize: 11 }
                 Item { Layout.fillWidth: true }
                 ActionBtn {
-                    label: "+ ADD NETWORK"; tint: Theme.neonGreen
+                    label: "+ ADD NODE"; tint: Theme.neonGreen
                     onActivated: {
                         addingNetwork = !addingNetwork
                         expandedSsid = ""
@@ -157,9 +181,19 @@ Item {
                     }
                 }
                 ActionBtn {
-                    label: "󰜉"; tint: Theme.neonPurple
+                    label: "󰜉  RESCAN"; tint: Theme.neonPurple
                     onActivated: { scanProc.running = true; savedProc.running = true }
                 }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                ActionBtn {
+                    label: root.showSavedNetworks ? "HIDE SAVED" : "SHOW SAVED (" + root.savedNetworks.length + ")"
+                    tint: Theme.neonPurple
+                    onActivated: root.showSavedNetworks = !root.showSavedNetworks
+                }
+                Item { Layout.fillWidth: true }
             }
 
             Rectangle {
@@ -200,26 +234,49 @@ Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 clip: true
+                contentWidth: availableWidth
                 ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
 
                 ColumnLayout {
+                    // Keep the flickable content tied to the viewport width;
+                    // Layout.fillWidth alone does not size Repeater delegates.
                     width: parent.width
                     spacing: 8
 
+                    Text {
+                        Layout.fillWidth: true
+                        visible: root.showSavedNetworks && root.savedNetworks.length > 0
+                        text: "SAVED PROFILES // PASSWORDLESS RECONNECT"
+                        color: Theme.neonPurple
+                        font.family: Theme.fontFamily
+                        font.bold: true
+                        font.pixelSize: 9
+                    }
+
+                    Text {
+                        Layout.fillWidth: true
+                        visible: !root.showSavedNetworks || root.savedNetworks.length === 0
+                        text: "VISIBLE NETWORKS // SCAN RESULTS"
+                        color: Theme.textDim
+                        font.family: Theme.fontFamily
+                        font.bold: true
+                        font.pixelSize: 9
+                    }
+
                     Repeater {
-                        model: root.savedNetworks.concat(root.networks)
+                        model: (root.showSavedNetworks ? root.savedNetworks : []).concat(root.networks)
 
                         delegate: ColumnLayout {
-                            Layout.fillWidth: true
+                            width: parent.width
                             spacing: 6
 
                             Rectangle {
-                                Layout.fillWidth: true
+                                width: parent.width
                                 height: 40
-                                radius: 3
-                        color: modelData.active ? Qt.rgba(Theme.neonCyan.r, Theme.neonCyan.g, Theme.neonCyan.b, 0.12) : (modelData.saved ? Qt.rgba(Theme.neonPurple.r, Theme.neonPurple.g, Theme.neonPurple.b, 0.10) : "transparent")
-                        border.width: 1
-                        border.color: modelData.active ? Theme.neonCyan : (modelData.saved ? Theme.neonPurple : Theme.borderDim)
+                                radius: 2
+                                color: modelData.active ? Qt.rgba(Theme.neonCyan.r, Theme.neonCyan.g, Theme.neonCyan.b, 0.14) : (modelData.saved ? Qt.rgba(Theme.neonPurple.r, Theme.neonPurple.g, Theme.neonPurple.b, 0.10) : Qt.rgba(Theme.borderDim.r, Theme.borderDim.g, Theme.borderDim.b, 0.12))
+                                border.width: 1
+                                border.color: modelData.active ? Theme.neonCyan : (modelData.saved ? Theme.neonPurple : Theme.borderDim)
 
                                 RowLayout {
                                     anchors.fill: parent
@@ -227,9 +284,10 @@ Item {
                                     anchors.rightMargin: 8
                                     spacing: 8
 
-                                    Text { text: "\u2312"; color: Theme.neonBlue; font.pixelSize: 13 }
+                                    Text { text: modelData.saved ? "󰖩" : "󰤨"; color: modelData.saved ? Theme.neonPurple : Theme.neonBlue; font.pixelSize: 13 }
                                     Text {
                                         Layout.fillWidth: true
+                                        Layout.minimumWidth: 0
                                         elide: Text.ElideRight
                                         text: modelData.ssid
                                         color: Theme.textPrimary
@@ -237,12 +295,13 @@ Item {
                                         font.pixelSize: 13
                                     }
                                     Text {
-                                        text: modelData.saved ? "SAVED" : modelData.signal + "%"
-                                        color: modelData.saved ? Theme.neonPurple : Theme.neonYellow
+                                        Layout.preferredWidth: 48
+                                        horizontalAlignment: Text.AlignRight
+                                        text: modelData.active ? "ACTIVE" : (modelData.saved ? "SAVED" : modelData.signal + "%")
+                                        color: modelData.active ? Theme.neonCyan : (modelData.saved ? Theme.neonPurple : Theme.neonYellow)
                                         font.family: Theme.fontFamily
-                                        font.pixelSize: 11
+                                        font.pixelSize: 10
                                     }
-
                                     ActionBtn {
                                         label: modelData.active ? "ACTIVE" : (modelData.saved ? "RECONNECT" : "CONNECT")
                                         tint: modelData.saved ? Theme.neonPurple : Theme.neonGreen
@@ -263,7 +322,7 @@ Item {
                             }
 
                             Rectangle {
-                                Layout.fillWidth: true
+                                width: parent.width
                                 visible: !modelData.saved && expandedSsid === modelData.ssid
                                 implicitHeight: visible ? passRow.implicitHeight + 16 : 0
                                 radius: 3
