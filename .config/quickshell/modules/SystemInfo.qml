@@ -11,9 +11,31 @@ Rectangle {
     implicitHeight: content.implicitHeight + 28
 
     radius: Theme.radiusSm
-    color: "transparent"
+    color: Theme.bgPanel
+    clip: true
     border.width: 1
     border.color: Theme.neonGreen
+
+    // Cyberpunk HUD scanline and targeting brackets.
+    Rectangle {
+        z: 2
+        x: 0
+        y: -height
+        width: root.width
+        height: 1
+        color: Theme.neonGreen
+        opacity: 0.2
+
+        SequentialAnimation on y {
+            loops: Animation.Infinite
+            NumberAnimation { to: root.height; duration: 4000; easing.type: Easing.Linear }
+            PauseAnimation { duration: 800 }
+        }
+    }
+    Rectangle { width: 18; height: 2; x: 8; y: 7; color: Theme.neonGreen }
+    Rectangle { width: 2; height: 18; x: 8; y: 7; color: Theme.neonGreen }
+    Rectangle { width: 18; height: 2; anchors.right: parent.right; anchors.rightMargin: 8; y: 7; color: Theme.neonCyan }
+    Rectangle { width: 2; height: 18; anchors.right: parent.right; anchors.rightMargin: 8; y: 7; color: Theme.neonCyan }
 
     property int cpuPercent: 0
     property int memPercent: 0
@@ -27,74 +49,83 @@ Rectangle {
         anchors.margins: 16
         spacing: 10
 
-        Text {
-            text: "SYSTEM"
-            color: Theme.neonGreen
-            font.family: Theme.fontFamily
-            font.bold: true
-            font.pixelSize: 12
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 10
+            Text { text: "// SYSTEM CORE"; color: Theme.neonGreen; font.family: Theme.fontFamily; font.bold: true; font.pixelSize: 11 }
+            Item { Layout.fillWidth: true }
+            Text { text: "[ NOMINAL ]"; color: Theme.neonCyan; font.family: Theme.fontFamily; font.bold: true; font.pixelSize: 10 }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            Text { text: "UPTIME //"; color: Theme.textDim; font.family: Theme.fontFamily; font.pixelSize: 10 }
+            Text { text: root.uptimeText; color: Theme.textPrimary; font.family: Theme.fontFamily; font.pixelSize: 10 }
+            Item { Layout.fillWidth: true }
+            Text { text: "RESOURCE MONITOR"; color: Theme.textDim; font.family: Theme.fontFamily; font.pixelSize: 9 }
         }
 
         RowLayout {
             Layout.fillWidth: true
             spacing: 10
-            Text { text: "cpu"; color: Theme.neonGreen; font.family: Theme.fontFamily; font.pixelSize: 12; Layout.preferredWidth: 32 }
+            Text { text: "CPU"; color: Theme.neonGreen; font.family: Theme.fontFamily; font.bold: true; font.pixelSize: 10; Layout.preferredWidth: 34 }
             Rectangle {
                 Layout.fillWidth: true
-                height: 6; radius: 3
-                color: Theme.bgCard
+                height: 8; radius: 1
+                color: Qt.rgba(Theme.neonYellow.r, Theme.neonYellow.g, Theme.neonYellow.b, 0.10)
+                border.width: 1
+                border.color: Qt.rgba(Theme.neonYellow.r, Theme.neonYellow.g, Theme.neonYellow.b, 0.35)
                 Rectangle {
-                    height: parent.height; radius: 3
+                    height: parent.height; radius: 1
                     width: parent.width * Math.min(root.cpuPercent, 100) / 100
                     color: Theme.neonYellow
                     Behavior on width { NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
                 }
             }
-            Text { text: root.cpuPercent + "%"; color: Theme.textPrimary; font.family: Theme.fontFamily; font.pixelSize: 12; Layout.preferredWidth: 38; horizontalAlignment: Text.AlignRight }
+            Text { text: "[ " + root.cpuPercent + "% ]"; color: Theme.textPrimary; font.family: Theme.fontFamily; font.pixelSize: 11; Layout.preferredWidth: 48; horizontalAlignment: Text.AlignRight }
         }
 
         RowLayout {
             Layout.fillWidth: true
             spacing: 10
-            Text { text: "mem"; color: Theme.neonGreen; font.family: Theme.fontFamily; font.pixelSize: 12; Layout.preferredWidth: 32 }
+            Text { text: "MEM"; color: Theme.neonGreen; font.family: Theme.fontFamily; font.bold: true; font.pixelSize: 10; Layout.preferredWidth: 34 }
             Rectangle {
                 Layout.fillWidth: true
-                height: 6; radius: 3
-                color: Theme.bgCard
+                height: 8; radius: 1
+                color: Qt.rgba(Theme.neonOrange.r, Theme.neonOrange.g, Theme.neonOrange.b, 0.10)
+                border.width: 1
+                border.color: Qt.rgba(Theme.neonOrange.r, Theme.neonOrange.g, Theme.neonOrange.b, 0.35)
                 Rectangle {
-                    height: parent.height; radius: 3
+                    height: parent.height; radius: 1
                     width: parent.width * Math.min(root.memPercent, 100) / 100
                     color: Theme.neonOrange
                     Behavior on width { NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
                 }
             }
-            Text { text: root.memPercent + "%"; color: Theme.textPrimary; font.family: Theme.fontFamily; font.pixelSize: 12; Layout.preferredWidth: 38; horizontalAlignment: Text.AlignRight }
+            Text { text: "[ " + root.memPercent + "% ]"; color: Theme.textPrimary; font.family: Theme.fontFamily; font.pixelSize: 11; Layout.preferredWidth: 48; horizontalAlignment: Text.AlignRight }
         }
 
         RowLayout {
             Layout.fillWidth: true
             spacing: 10
-            Text { text: "disk"; color: Theme.neonGreen; font.family: Theme.fontFamily; font.pixelSize: 12; Layout.preferredWidth: 32 }
+            Text { text: "DISK"; color: Theme.neonGreen; font.family: Theme.fontFamily; font.bold: true; font.pixelSize: 10; Layout.preferredWidth: 34 }
             Rectangle {
                 Layout.fillWidth: true
-                height: 6; radius: 3
-                color: Theme.bgCard
+                height: 8; radius: 1
+                color: Qt.rgba(Theme.neonGreen.r, Theme.neonGreen.g, Theme.neonGreen.b, 0.10)
+                border.width: 1
+                border.color: Qt.rgba(Theme.neonGreen.r, Theme.neonGreen.g, Theme.neonGreen.b, 0.35)
                 Rectangle {
-                    height: parent.height; radius: 3
+                    height: parent.height; radius: 1
                     width: parent.width * Math.min(root.diskPercent, 100) / 100
                     color: Theme.neonGreen
                     Behavior on width { NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
                 }
             }
-            Text { text: root.diskPercent + "%"; color: Theme.textPrimary; font.family: Theme.fontFamily; font.pixelSize: 12; Layout.preferredWidth: 38; horizontalAlignment: Text.AlignRight }
+            Text { text: "[ " + root.diskPercent + "% ]"; color: Theme.textPrimary; font.family: Theme.fontFamily; font.pixelSize: 11; Layout.preferredWidth: 48; horizontalAlignment: Text.AlignRight }
         }
 
-        Text {
-            text: "up " + root.uptimeText
-            color: Theme.textDim
-            font.family: Theme.fontFamily
-            font.pixelSize: 12
-        }
+
     }
 
     // df has no equivalent under /proc — root filesystem usage % via a

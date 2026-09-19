@@ -66,10 +66,32 @@ Item {
     // Border box around each slider (also reads as a divider when stacked)
     Rectangle {
         anchors.fill: parent
-        color: "transparent"
+        color: Theme.bgPanel
+        clip: true
         border.width: 1
         border.color: root.accent
         radius: Theme.radiusSm
+
+        // Moving scanline keeps the control visually consistent with the HUD modules.
+        Rectangle {
+            z: 2
+            x: 0
+            y: -height
+            width: parent.width
+            height: 1
+            color: root.accent
+            opacity: 0.2
+
+            SequentialAnimation on y {
+                loops: Animation.Infinite
+                NumberAnimation { to: root.height; duration: 3600; easing.type: Easing.Linear }
+                PauseAnimation { duration: 700 }
+            }
+        }
+        Rectangle { width: 14; height: 2; x: 7; y: 6; color: root.accent }
+        Rectangle { width: 2; height: 14; x: 7; y: 6; color: root.accent }
+        Rectangle { width: 14; height: 2; anchors.right: parent.right; anchors.rightMargin: 7; y: 6; color: root.accent }
+        Rectangle { width: 2; height: 14; anchors.right: parent.right; anchors.rightMargin: 7; y: 6; color: root.accent }
 
         ColumnLayout {
             id: content
@@ -82,18 +104,18 @@ Item {
             RowLayout {
                 Layout.fillWidth: true
                 Text {
-                    text: root.label
-                    color: Theme.textPrimary
+                    text: "// " + root.label.toUpperCase() + " CHANNEL"
+                    color: root.accent
                     font.family: Theme.fontFamily
-                    font.pixelSize: 13
+                    font.pixelSize: 11
                     font.bold: true
                 }
                 Item { Layout.fillWidth: true }
                 Text {
-                    text: root.value + "%"
-                    color: root.accent
+                    text: "[ " + root.value + "% ]"
+                    color: Theme.textPrimary
                     font.family: Theme.fontFamily
-                    font.pixelSize: 13
+                    font.pixelSize: 11
                     font.bold: true
                 }
             }
@@ -103,26 +125,28 @@ Item {
                 Layout.fillWidth: true
                 Layout.topMargin: 2
                 Layout.bottomMargin: 2
-                height: 6
-                radius: 3
-                color: Theme.bgCard || Qt.rgba(1, 1, 1, 0.1)
+                height: 8
+                radius: 1
+                color: Qt.rgba(root.accent.r, root.accent.g, root.accent.b, 0.10)
+                border.width: 1
+                border.color: Qt.rgba(root.accent.r, root.accent.g, root.accent.b, 0.35)
 
                 Rectangle {
                     width: Math.max(0, Math.min(parent.width, parent.width * (root.value / 100)))
                     height: parent.height
-                    radius: 3
+                    radius: 1
                     color: root.accent
                 }
 
                 Rectangle {
                     x: Math.max(0, Math.min(track.width, track.width * (root.value / 100))) - 6
                     anchors.verticalCenter: parent.verticalCenter
-                    width: 12
-                    height: 12
-                    radius: 6
+                    width: 14
+                    height: 14
+                    radius: 2
                     color: Theme.textPrimary
                     border.color: root.accent
-                    border.width: 1
+                    border.width: 2
                 }
 
                 MouseArea {

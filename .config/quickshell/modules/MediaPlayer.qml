@@ -10,9 +10,31 @@ Rectangle {
     implicitHeight: content.implicitHeight + 28
 
     radius: 5
-    color: "transparent"
+    color: Theme.bgPanel
+    clip: true
     border.width: 1
     border.color: Theme.neonRed
+
+    // HUD scanline and corner brackets give the player a terminal-console look.
+    Rectangle {
+        z: 2
+        x: 0
+        y: -height
+        width: root.width
+        height: 1
+        color: Theme.neonRed
+        opacity: 0.2
+
+        SequentialAnimation on y {
+            loops: Animation.Infinite
+            NumberAnimation { to: root.height; duration: 3800; easing.type: Easing.Linear }
+            PauseAnimation { duration: 700 }
+        }
+    }
+    Rectangle { width: 18; height: 2; x: 8; y: 7; color: Theme.neonRed }
+    Rectangle { width: 2; height: 18; x: 8; y: 7; color: Theme.neonRed }
+    Rectangle { width: 18; height: 2; anchors.right: parent.right; anchors.rightMargin: 8; y: 7; color: Theme.neonMagenta }
+    Rectangle { width: 2; height: 18; anchors.right: parent.right; anchors.rightMargin: 8; y: 7; color: Theme.neonMagenta }
 
     // MPRIS also exposes browsers and video players. Do not blindly use the
     // first player: ObjectModel order is not a reliable indication of the
@@ -50,10 +72,10 @@ Rectangle {
         property bool enabled: true
         signal activated()
 
-        width: 34; height: 34
-        radius: Theme.radiusSm
+        width: 38; height: 34
+        radius: 2
         opacity: enabled ? 1 : 0.35
-        color: mouse.containsMouse && enabled ? tint : "transparent"
+        color: mouse.containsMouse && enabled ? tint : Qt.rgba(tint.r, tint.g, tint.b, 0.06)
         border.width: 1
         border.color: tint
         Behavior on color { ColorAnimation { duration: 120 } }
@@ -78,45 +100,67 @@ Rectangle {
         id: content
         anchors.fill: parent
         anchors.margins: 14
-        spacing: 12
+        spacing: 10
 
-        Text {
-            text: "NOW PLAYING"
-            color: Theme.neonRed
-            font.family: Theme.fontFamily
-            font.bold: true
-            font.pixelSize: 12
-        }
-
-        // --- Track info ---
-        ColumnLayout {
+        // ── Cyberpunk player header ──
+        RowLayout {
             Layout.fillWidth: true
-            spacing: 5
-
             Text {
-                Layout.fillWidth: true
-                elide: Text.ElideRight
-                text: root.player ? (root.player.trackTitle || "Unknown Track") : "Nothing playing"
-                color: Theme.neonMagenta
+                text: "// AUDIO DECK"
+                color: Theme.neonRed
                 font.family: Theme.fontFamily
                 font.bold: true
-                font.pixelSize: 14
+                font.pixelSize: 10
             }
+            Item { Layout.fillWidth: true }
             Text {
-                Layout.fillWidth: true
-                elide: Text.ElideRight
-                visible: !!root.player && !!root.player.trackArtist
-                text: root.player ? (root.player.trackArtist || "") : ""
-                color: Theme.textDim
+                text: root.playing ? "[ STREAMING ]" : "[ STANDBY ]"
+                color: root.playing ? Theme.neonGreen : Theme.textDim
                 font.family: Theme.fontFamily
-                font.pixelSize: 12
+                font.bold: true
+                font.pixelSize: 10
             }
         }
 
-        // --- Controls ---
+        Rectangle {
+            Layout.fillWidth: true
+            implicitHeight: trackInfo.implicitHeight + 18
+            radius: 3
+            color: Qt.rgba(Theme.neonRed.r, Theme.neonRed.g, Theme.neonRed.b, 0.08)
+            border.width: 1
+            border.color: Qt.rgba(Theme.neonRed.r, Theme.neonRed.g, Theme.neonRed.b, 0.55)
+
+            ColumnLayout {
+                id: trackInfo
+                anchors.fill: parent
+                anchors.margins: 9
+                spacing: 5
+
+                Text {
+                    Layout.fillWidth: true
+                    elide: Text.ElideRight
+                    text: root.player ? (root.player.trackTitle || "UNKNOWN TRACK") : "NO SIGNAL"
+                    color: Theme.neonMagenta
+                    font.family: Theme.fontFamily
+                    font.bold: true
+                    font.pixelSize: 15
+                }
+                Text {
+                    Layout.fillWidth: true
+                    elide: Text.ElideRight
+                    visible: !!root.player && !!root.player.trackArtist
+                    text: root.player ? ("ARTIST // " + (root.player.trackArtist || "")) : ""
+                    color: Theme.textDim
+                    font.family: Theme.fontFamily
+                    font.pixelSize: 11
+                }
+            }
+        }
+
+        // ── Transport controls ──
         RowLayout {
             Layout.alignment: Qt.AlignHCenter
-            spacing: 18
+            spacing: 12
 
             ControlBtn {
                 glyph: "\u23EE"
