@@ -8,7 +8,7 @@ Item {
     
     // Simple logic: Give it explicit sizing constraints just like the Sliders
     Layout.fillWidth: true
-    height: 46 
+    height: 52
     implicitWidth: 360
     implicitHeight: height
 
@@ -18,7 +18,7 @@ Item {
 
     RowLayout {
         anchors.fill: parent
-        spacing: 12
+        spacing: 8
 
         Repeater {
             model: [
@@ -31,9 +31,9 @@ Item {
                 id: btn
                 Layout.fillWidth: true
                 Layout.fillHeight: true // Fills the 46px parent height safely
-                radius: Theme.radiusSm || 4
-                
-                color: mouse.containsMouse ? Qt.rgba(modelData.tint.r, modelData.tint.g, modelData.tint.b, 0.12) : "transparent"
+                radius: 2
+
+                color: mouse.containsMouse ? Qt.rgba(modelData.tint.r, modelData.tint.g, modelData.tint.b, 0.14) : Qt.rgba(modelData.tint.r, modelData.tint.g, modelData.tint.b, 0.04)
                 border.width: 1.5
                 border.color: modelData.tint
 
@@ -50,9 +50,9 @@ Item {
                     }
 
                     Text {
-                        text: modelData.name
+                        text: "// " + modelData.name
                         color: Theme.textPrimary
-                        font { family: Theme.fontFamily; pixelSize: 12; bold: true }
+                        font { family: Theme.fontFamily; pixelSize: 10; bold: true }
                     }
                 }
 

@@ -1,8 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
-import Quickshell
-import Quickshell.Services.Notifications
+import Quickshell.Io
 import qs
 
 Rectangle {
@@ -17,30 +16,80 @@ Rectangle {
     border.width: 1
     border.color: Theme.neonYellow
 
-    NotificationServer {
-        id: server
-        keepOnReload: false
-        actionsSupported: true
-        bodySupported: true
-        imageSupported: true
-    }
+    property var notifications: []
 
-    Connections {
-        target: server
-        function onNotification(notification) {
-            lockComponent.createObject(server, { object: notification, locked: true })
+    Process {
+        id: activeProc
+        command: ["makoctl", "list", "-j"]
+        stdout: StdioCollector {
+            onStreamFinished: root.updateNotifications(this.text, false)
         }
     }
 
-    Component {
-        id: lockComponent
-        RetainableLock {}
+    Process {
+        id: historyProc
+        command: ["makoctl", "history", "-j"]
+        stdout: StdioCollector {
+            onStreamFinished: root.updateNotifications(this.text, true)
+        }
     }
 
-    function urgencyColor(u) {
-        if (u === NotificationUrgency.Critical) return Theme.neonRed
-        if (u === NotificationUrgency.Low) return Theme.textDim
+    Process { id: commandProc }
+
+    function updateNotifications(json, fromHistory) {
+        let entries
+        try {
+            entries = JSON.parse(json)
+        } catch (error) {
+            return
+        }
+        if (!Array.isArray(entries)) return
+
+        const other = root.notifications.filter(n => n.fromHistory !== fromHistory)
+        const parsed = entries.map(n => ({
+            id: n.id,
+            appName: n["app-name"] || n.appName || "notification",
+            summary: n.summary || "",
+            body: n.body || "",
+            urgency: n.urgency || "normal",
+            actions: (n.actions || []).map(a => ({
+                text: a.name || a.text || a.id || "",
+                id: a.id || a.identifier || ""
+            })),
+            fromHistory: fromHistory
+        }))
+        root.notifications = other.concat(parsed)
+    }
+
+    function urgencyColor(urgency) {
+        if (urgency === "critical" || urgency === 2) return Theme.neonRed
+        if (urgency === "low" || urgency === 0) return Theme.textDim
         return Theme.neonBlue
+    }
+
+    function refresh() {
+        if (!activeProc.running) activeProc.running = true
+        if (!historyProc.running) historyProc.running = true
+    }
+
+    function dismissNotification(id) {
+        commandProc.command = ["makoctl", "dismiss", "-n", String(id)]
+        commandProc.running = true
+        Qt.callLater(refresh)
+    }
+
+    function invokeNotificationAction(id, action) {
+        commandProc.command = ["makoctl", "invoke", "-n", String(id), action]
+        commandProc.running = true
+    }
+
+    Component.onCompleted: refresh()
+
+    Timer {
+        interval: 2000
+        running: true
+        repeat: true
+        onTriggered: root.refresh()
     }
 
     ColumnLayout {
@@ -70,10 +119,9 @@ Rectangle {
                     anchors.margins: -4
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        const list = []
-                        for (let i = 0; i < server.trackedNotifications.rowCount(); i++)
-                            list.push(server.trackedNotifications.get(i))
-                        list.forEach(n => n.dismiss())
+                        commandProc.command = ["makoctl", "dismiss", "--all"]
+                        commandProc.running = true
+                        root.notifications = []
                     }
                 }
             }
@@ -92,7 +140,7 @@ Rectangle {
                 Text {
                     Layout.fillWidth: true
                     Layout.topMargin: 12
-                    visible: notifRepeater.count === 0
+                    visible: root.notifications.length === 0
                     horizontalAlignment: Text.AlignHCenter
                     text: "no notifications"
                     color: Theme.textDim
@@ -102,7 +150,7 @@ Rectangle {
 
                 Repeater {
                     id: notifRepeater
-                    model: server.trackedNotifications
+                    model: root.notifications
 
                     delegate: Rectangle {
                         id: card
@@ -143,7 +191,7 @@ Rectangle {
                                         anchors.fill: parent
                                         anchors.margins: -4
                                         cursorShape: Qt.PointingHandCursor
-                                        onClicked: card.modelData.dismiss()
+                                        onClicked: root.dismissNotification(card.modelData.id)
                                     }
                                 }
                             }
@@ -201,7 +249,7 @@ Rectangle {
                                             anchors.fill: parent
                                             hoverEnabled: true
                                             cursorShape: Qt.PointingHandCursor
-                                            onClicked: parent.modelData.invoke()
+                                            onClicked: root.invokeNotificationAction(card.modelData.id, parent.modelData.id)
                                         }
                                     }
                                 }

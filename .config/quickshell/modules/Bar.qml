@@ -18,24 +18,51 @@ PanelWindow {
         anchors.fill: parent
         radius: Theme.radiusMd
         color: Theme.bgPanel
-        
+        border.width: 2
+        border.color: Theme.neonPurple
+
+        Rectangle {
+            z: 3
+            x: 0
+            y: parent.height - 1
+            width: parent.width
+            height: 1
+            color: Theme.neonCyan
+            opacity: 0.65
+        }
+
+        Rectangle {
+            z: 2
+            x: 0
+            y: -height
+            width: parent.width
+            height: 1
+            color: Theme.neonMagenta
+            opacity: 0.18
+            SequentialAnimation on y {
+                loops: Animation.Infinite
+                NumberAnimation { to: parent.height; duration: 5000; easing.type: Easing.Linear }
+                PauseAnimation { duration: 900 }
+            }
+        }
+
         // left cluster — workspaces
         RowLayout {
             anchors.left: parent.left
-            anchors.leftMargin: 16
+            anchors.leftMargin: 12
             anchors.verticalCenter: parent.verticalCenter
-            spacing: 8
+            spacing: 10
 
             Workspaces {
-                Layout.preferredWidth: 180 
+                Layout.preferredWidth: 180
             }
         }
 
         // center cluster — now playing + cava visualizer
         RowLayout {
             anchors.centerIn: parent
-            spacing: 18
-            
+            spacing: 14
+
             Clock {}
 
             // issue: Cava instance is not running - so currently commenting this module
@@ -45,9 +72,9 @@ PanelWindow {
         // right cluster — brightness, battery, wifi, power
         RowLayout {
             anchors.right: parent.right
-            anchors.rightMargin: 16
+            anchors.rightMargin: 12
             anchors.verticalCenter: parent.verticalCenter
-            spacing: 18
+            spacing: 12
 
             Battery {}
             Wifi {}
