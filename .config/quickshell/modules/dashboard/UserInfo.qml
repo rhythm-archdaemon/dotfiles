@@ -1,44 +1,19 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import qs
+import qs.config
+import qs.components
 
-// Standalone user-greeting module. No system stats or power buttons here —
-// see SystemInfo.qml and PowerRow.qml respectively.
-Rectangle {
+// User greeting card.
+HudPanel {
     id: root
+
     Layout.fillWidth: true
     implicitHeight: content.implicitHeight + 28
-
-    radius: Theme.radiusSm
-    color: Theme.bgPanel
-    clip: true
-    border.width: 1
-    border.color: Theme.neonMagenta
-
-    // Subtle HUD scanline for a cyberpunk terminal feel.
-    Rectangle {
-        id: scanline
-        z: 2
-        x: 0
-        y: -height
-        width: root.width
-        height: 1
-        color: Theme.neonCyan
-        opacity: 0.22
-
-        SequentialAnimation on y {
-            loops: Animation.Infinite
-            NumberAnimation { to: root.height; duration: 4200; easing.type: Easing.Linear }
-            PauseAnimation { duration: 900 }
-        }
-    }
-
-    // Four small corner brackets make the card read as a HUD panel.
-    Rectangle { width: 18; height: 2; x: 8; y: 7; color: Theme.neonCyan }
-    Rectangle { width: 2; height: 18; x: 8; y: 7; color: Theme.neonCyan }
-    Rectangle { width: 18; height: 2; anchors.right: parent.right; anchors.rightMargin: 8; y: 7; color: Theme.neonMagenta }
-    Rectangle { width: 2; height: 18; anchors.right: parent.right; anchors.rightMargin: 8; y: 7; color: Theme.neonMagenta }
+    borderColor: Theme.neonMagenta
+    accent: Theme.neonCyan
+    accent2: Theme.neonMagenta
+    scanDuration: 4200
 
     property string username: Quickshell.env("USER") ?? "stranger"
     property date currentTime: new Date()
@@ -48,8 +23,7 @@ Rectangle {
         if (h >= 5 && h < 12) return "good morning,"
         if (h >= 12 && h < 17) return "good afternoon,"
         if (h >= 17 && h < 21) return "good evening,"
-        if (h >= 21 || h < 5) return "good night,"
-        return "hello,"
+        return "good night,"
     }
 
     readonly property var quotes: [
@@ -74,7 +48,6 @@ Rectangle {
         anchors.margins: 16
         spacing: 10
 
-        // ── Identity header ──
         RowLayout {
             Layout.fillWidth: true
             Text {
@@ -128,7 +101,7 @@ Rectangle {
             }
         }
 
-        // Negative margins make the divider reach both inner border edges.
+        // negative margins make the divider reach both inner border edges
         Rectangle {
             Layout.fillWidth: true
             Layout.leftMargin: -16
@@ -137,24 +110,16 @@ Rectangle {
             color: Theme.neonMagenta
         }
 
-        // ── Time-aware greeting ──
-        ColumnLayout {
+        Text {
             Layout.fillWidth: true
-            spacing: 4
-
-            Text {
-                Layout.fillWidth: true
-                horizontalAlignment: Text.AlignHCenter
-                text: root.greeting.toUpperCase()
-                color: Theme.neonCyan
-                font.family: Theme.fontFamily
-                font.bold: true
-                font.pixelSize: 15
-            }
-
+            horizontalAlignment: Text.AlignHCenter
+            text: root.greeting.toUpperCase()
+            color: Theme.neonCyan
+            font.family: Theme.fontFamily
+            font.bold: true
+            font.pixelSize: 15
         }
 
-        // ── Quote of the day ──
         Rectangle {
             Layout.fillWidth: true
             implicitHeight: quoteContent.implicitHeight + 18

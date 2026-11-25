@@ -1,27 +1,24 @@
 import QtQuick
 import QtQuick.Layouts
-import Quickshell.Services.UPower
-import qs
+import qs.config
+import qs.services
 
 Item {
     id: root
 
-    readonly property var dev: UPower.displayDevice
-    readonly property bool present: !!root.dev && root.dev.isLaptopBattery
-    readonly property int percent: Math.round(root.dev.percentage * 100)
-    readonly property bool charging: !!root.dev &&
-        (root.dev.state === UPowerDeviceState.Charging || root.dev.state === UPowerDeviceState.PendingCharge)
-    readonly property bool full: !!root.dev && root.dev.state === UPowerDeviceState.FullyCharged
+    readonly property int percent: BatteryStatus.percent
+    readonly property bool charging: BatteryStatus.charging
+    readonly property bool full: BatteryStatus.full
 
     readonly property color stateColor: {
-        if (!root.present) return Theme.textDim
+        if (!BatteryStatus.present) return Theme.textDim
         if (root.charging || root.full) return Theme.neonGreen
         if (root.percent <= 15) return Theme.neonRed
         if (root.percent <= 50) return Theme.neonOrange
         return Theme.neonCyan
     }
 
-    visible: root.present
+    visible: BatteryStatus.present && Config.bar.showBattery
     implicitWidth: batteryRow.implicitWidth
     implicitHeight: 24
 
@@ -52,7 +49,7 @@ Item {
             font.pixelSize: Theme.fontSize
 
             SequentialAnimation on opacity {
-                running: root.present && root.percent <= 15 && !root.charging
+                running: BatteryStatus.present && root.percent <= 15 && !root.charging
                 loops: Animation.Infinite
                 NumberAnimation { from: 1.0; to: 0.3; duration: 600 }
                 NumberAnimation { from: 0.3; to: 1.0; duration: 600 }

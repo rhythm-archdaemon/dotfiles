@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
-import qs
+import qs.config
 
 Item {
     id: root
@@ -12,7 +12,8 @@ Item {
     Text {
         id: clockText
         anchors.centerIn: parent
-        text: "// " + Qt.formatDateTime(root.currentTime, "ddd dd MMM") + "  |  " + Qt.formatDateTime(root.currentTime, "HH:mm")
+        text: "// " + Qt.formatDateTime(root.currentTime, Config.bar.dateFormat)
+            + "  |  " + Qt.formatDateTime(root.currentTime, Config.bar.timeFormat)
         color: Theme.neonRed
         font.family: Theme.fontFamily
         font.pixelSize: Theme.fontSize - 1

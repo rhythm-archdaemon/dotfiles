@@ -1,8 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import qs
-import qs.modules
+import qs.config
 
 PanelWindow {
     id: bar
@@ -10,7 +9,6 @@ PanelWindow {
     screen: modelData
 
     anchors { top: true; left: true; right: true }
-    margins { top: 0; left: 0; right: 0 }
     implicitHeight: Theme.barHeight
     color: "transparent"
 
@@ -32,6 +30,7 @@ PanelWindow {
         }
 
         Rectangle {
+            visible: Config.appearance.scanlines
             z: 2
             x: 0
             y: -height
@@ -40,6 +39,7 @@ PanelWindow {
             color: Theme.neonMagenta
             opacity: 0.18
             SequentialAnimation on y {
+                running: Config.appearance.scanlines
                 loops: Animation.Infinite
                 NumberAnimation { to: parent.height; duration: 5000; easing.type: Easing.Linear }
                 PauseAnimation { duration: 900 }
@@ -53,23 +53,18 @@ PanelWindow {
             anchors.verticalCenter: parent.verticalCenter
             spacing: 10
 
-            Workspaces {
-                Layout.preferredWidth: 180
-            }
+            Workspaces {}
         }
 
-        // center cluster — now playing + cava visualizer
+        // center cluster — clock (cava / now-playing can go here later)
         RowLayout {
             anchors.centerIn: parent
             spacing: 14
 
-            Clock {}
-
-            // issue: Cava instance is not running - so currently commenting this module
-            // Cava {}
+            Clock { visible: Config.bar.showClock }
         }
 
-        // right cluster — brightness, battery, wifi, power
+        // right cluster
         RowLayout {
             anchors.right: parent.right
             anchors.rightMargin: 12
@@ -77,7 +72,7 @@ PanelWindow {
             spacing: 12
 
             Battery {}
-            Wifi {}
+            Wifi { visible: Config.bar.showWifi }
         }
     }
 }

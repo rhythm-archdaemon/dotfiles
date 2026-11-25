@@ -1,8 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
-import Quickshell.Io
-import qs
+import qs.config
+import qs.services
 
 Rectangle {
     id: root
@@ -16,80 +16,10 @@ Rectangle {
     border.width: 1
     border.color: Theme.neonYellow
 
-    property var notifications: []
-
-    Process {
-        id: activeProc
-        command: ["makoctl", "list", "-j"]
-        stdout: StdioCollector {
-            onStreamFinished: root.updateNotifications(this.text, false)
-        }
-    }
-
-    Process {
-        id: historyProc
-        command: ["makoctl", "history", "-j"]
-        stdout: StdioCollector {
-            onStreamFinished: root.updateNotifications(this.text, true)
-        }
-    }
-
-    Process { id: commandProc }
-
-    function updateNotifications(json, fromHistory) {
-        let entries
-        try {
-            entries = JSON.parse(json)
-        } catch (error) {
-            return
-        }
-        if (!Array.isArray(entries)) return
-
-        const other = root.notifications.filter(n => n.fromHistory !== fromHistory)
-        const parsed = entries.map(n => ({
-            id: n.id,
-            appName: n["app-name"] || n.appName || "notification",
-            summary: n.summary || "",
-            body: n.body || "",
-            urgency: n.urgency || "normal",
-            actions: (n.actions || []).map(a => ({
-                text: a.name || a.text || a.id || "",
-                id: a.id || a.identifier || ""
-            })),
-            fromHistory: fromHistory
-        }))
-        root.notifications = other.concat(parsed)
-    }
-
     function urgencyColor(urgency) {
         if (urgency === "critical" || urgency === 2) return Theme.neonRed
         if (urgency === "low" || urgency === 0) return Theme.textDim
         return Theme.neonBlue
-    }
-
-    function refresh() {
-        if (!activeProc.running) activeProc.running = true
-        if (!historyProc.running) historyProc.running = true
-    }
-
-    function dismissNotification(id) {
-        commandProc.command = ["makoctl", "dismiss", "-n", String(id)]
-        commandProc.running = true
-        Qt.callLater(refresh)
-    }
-
-    function invokeNotificationAction(id, action) {
-        commandProc.command = ["makoctl", "invoke", "-n", String(id), action]
-        commandProc.running = true
-    }
-
-    Component.onCompleted: refresh()
-
-    Timer {
-        interval: 2000
-        running: true
-        repeat: true
-        onTriggered: root.refresh()
     }
 
     ColumnLayout {
@@ -118,11 +48,7 @@ Rectangle {
                     anchors.fill: parent
                     anchors.margins: -4
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        commandProc.command = ["makoctl", "dismiss", "--all"]
-                        commandProc.running = true
-                        root.notifications = []
-                    }
+                    onClicked: Notifications.clearAll()
                 }
             }
         }
@@ -140,7 +66,7 @@ Rectangle {
                 Text {
                     Layout.fillWidth: true
                     Layout.topMargin: 12
-                    visible: root.notifications.length === 0
+                    visible: Notifications.entries.length === 0
                     horizontalAlignment: Text.AlignHCenter
                     text: "no notifications"
                     color: Theme.textDim
@@ -150,7 +76,7 @@ Rectangle {
 
                 Repeater {
                     id: notifRepeater
-                    model: root.notifications
+                    model: Notifications.entries
 
                     delegate: Rectangle {
                         id: card
@@ -191,7 +117,7 @@ Rectangle {
                                         anchors.fill: parent
                                         anchors.margins: -4
                                         cursorShape: Qt.PointingHandCursor
-                                        onClicked: root.dismissNotification(card.modelData.id)
+                                        onClicked: Notifications.dismiss(card.modelData.id)
                                     }
                                 }
                             }
@@ -226,6 +152,7 @@ Rectangle {
                                 Repeater {
                                     model: card.modelData.actions || []
                                     delegate: Rectangle {
+                                        id: actionBtn
                                         required property var modelData
                                         implicitWidth: actionLbl.implicitWidth + 16
                                         implicitHeight: 24
@@ -238,7 +165,7 @@ Rectangle {
                                         Text {
                                             id: actionLbl
                                             anchors.centerIn: parent
-                                            text: parent.modelData.text || ""
+                                            text: actionBtn.modelData.text || ""
                                             color: actionMouse.containsMouse ? Theme.bgPanel : Theme.neonGreen
                                             font.family: Theme.fontFamily
                                             font.pixelSize: 10
@@ -249,7 +176,7 @@ Rectangle {
                                             anchors.fill: parent
                                             hoverEnabled: true
                                             cursorShape: Qt.PointingHandCursor
-                                            onClicked: root.invokeNotificationAction(card.modelData.id, parent.modelData.id)
+                                            onClicked: Notifications.invoke(card.modelData.id, actionBtn.modelData.id)
                                         }
                                     }
                                 }

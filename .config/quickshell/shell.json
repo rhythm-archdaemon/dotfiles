@@ -1,0 +1,52 @@
+{
+  "appearance": {
+    "fontFamily": "Quantico",
+    "fontSize": 14,
+    "radiusSm": 5,
+    "radiusMd": 0,
+    "scanlines": true,
+    "scanlineOpacity": 0.2,
+    "brackets": true
+  },
+  "palette": {
+    "bgVoid": "#1a1b26",
+    "bgPanel": "#16161e",
+    "bgCard": "#24283b",
+    "borderDim": "#383e5a",
+    "neonCyan": "#7dcfff",
+    "neonMagenta": "#bb9af7",
+    "neonPurple": "#9d7cd8",
+    "neonYellow": "#e0af68",
+    "neonBlue": "#7aa2f7",
+    "neonGreen": "#9ece6a",
+    "neonOrange": "#ff9e64",
+    "neonRed": "#f7768e",
+    "textPrimary": "#c0caf5",
+    "textDim": "#565f89"
+  },
+  "bar": {
+    "enabled": true,
+    "height": 30,
+    "workspaceCount": 9,
+    "showClock": true,
+    "showBattery": true,
+    "showWifi": true,
+    "dateFormat": "ddd dd MMM",
+    "timeFormat": "HH:mm"
+  },
+  "leftSidebar": { "enabled": true, "width": 400 },
+  "rightSidebar": { "enabled": true, "width": 400 },
+  "services": {
+    "statsPollMs": 2000,
+    "networkPollMs": 5000,
+    "brightnessPollMs": 1000,
+    "notificationPollMs": 2000,
+    "ignoredPlayers": [
+      "firefox", "chromium", "chrome", "brave", "vivaldi", "opera", "browser",
+      "youtube", "mpv", "vlc", "celluloid", "totem", "haruna", "video"
+    ],
+    "lockCommand": ["gtklock"],
+    "rebootCommand": ["systemctl", "reboot"],
+    "poweroffCommand": ["systemctl", "poweroff"]
+  }
+}
